@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Simulateur GoMining avec Halving, Frais et Hashrate évolutif</title>
+<title>Simulateur GoMining avec Halving, Frais et Infos</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f3f5; color: #333; padding: 20px; }
@@ -25,7 +25,7 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
 </head>
 <body>
 <div class="container">
-<h1>Simulateur GoMining avec Halving, Frais et Hashrate évolutif</h1>
+<h1>Simulateur GoMining avec Halving, Frais et Infos</h1>
 
 <div class="flex-container">
   <div class="card flex-left">
@@ -70,7 +70,6 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
         <th>Frais électricité (sat)</th>
         <th>Frais service (sat)</th>
         <th>Gain net (sat)</th>
-        <th>Hashrate réseau (TH/s)</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -84,6 +83,7 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
 <script>
 let chartInstance = null;
 
+// Calcul du reward par TH selon la date et les halvings
 function getRewardPerTH(currentDate) {
     const lastHalving = new Date("2024-04-01");
     const initialReward = 49; // satoshi/TH/jour avant halving
@@ -94,10 +94,10 @@ function getRewardPerTH(currentDate) {
     return initialReward / Math.pow(2, halvingsSince);
 }
 
-// Hashrate évolutif : croissance 3 à 5 % par mois
-function getNetworkHashrate(day, baseHashrate=500000) {
+// Croissance aléatoire du hashrate entre 3 et 5 % par mois
+function getNetworkHashrate(day, baseHashrate) {
     const monthsElapsed = Math.floor(day / 30);
-    const growthRate = 0.03 + Math.random()*0.02; // 3 à 5%
+    const growthRate = 0.03 + Math.random()*0.02; // 3% à 5%
     return baseHashrate * Math.pow(1 + growthRate, monthsElapsed);
 }
 
@@ -114,8 +114,11 @@ async function simulate() {
   const btcUSD = data.bitcoin.usd;
   const gmtUSD = data["gmt-token"].usd;
 
+  // Panneau infos
   document.getElementById("btcPrice").innerText = `$${btcUSD.toLocaleString()} / €${data.bitcoin.eur.toLocaleString()}`;
   document.getElementById("gmtPrice").innerText = `$${gmtUSD.toLocaleString()} / €${data["gmt-token"].eur.toLocaleString()}`;
+  const baseHashrate = 500000; // TH/s initial
+  document.getElementById("networkHashrate").innerText = baseHashrate.toLocaleString();
   document.getElementById("rewardPerTHDisplay").innerText = getRewardPerTH(new Date()).toFixed(2);
 
   let totalDays = 1;
@@ -130,7 +133,7 @@ async function simulate() {
 
   let labels = [], gainHistory = [];
   let cumulativeRewardSat = 0;
-  const startDate = new Date();
+  const startDate = new Date(); // date de départ
 
   for (let day = 1; day <= totalDays; day++) {
     const currentDate = new Date(startDate);
@@ -144,11 +147,18 @@ async function simulate() {
     const totalServiceFee = serviceFee*th;
     const rewardNet = rewardBrut - (totalElectricityFee + totalServiceFee);
 
-    let displayReward = rewardNet;
+    // Hashrate variable
+    const currentHashrate = getNetworkHashrate(day, baseHashrate);
+    if(day===1 || day%30===0) document.getElementById("networkHashrate").innerText = Math.round(currentHashrate).toLocaleString();
+
     if(strategy=="gomining") cumulativeRewardSat += rewardNet; else cumulativeRewardSat = rewardNet;
 
-    const currentHashrate = getNetworkHashrate(day);
-    document.getElementById("networkHashrate").innerText = currentHashrate.toLocaleString();
+    if(strategy=="reinvest"){
+      const rewardUSD = (rewardNet/1e8)*btcUSD;
+      const reinvestUSD = rewardUSD*1.05;
+      const thBought = reinvestUSD/28;
+      th += thBought;
+    }
 
     if ((unit=="2" && day%30==0) || (unit=="3" && day%365==0) || unit=="1") {
       const row = document.createElement("tr");
@@ -159,19 +169,11 @@ async function simulate() {
         <td>${totalElectricityFee.toFixed(4)}</td>
         <td>${totalServiceFee.toFixed(4)}</td>
         <td>${(strategy=="gomining"?cumulativeRewardSat:rewardNet).toFixed(2)}</td>
-        <td>${currentHashrate.toFixed(0)}</td>
       `;
       tbody.appendChild(row);
 
       labels.push(day);
       gainHistory.push(strategy=="gomining"?cumulativeRewardSat:rewardNet);
-    }
-
-    if(strategy=="reinvest"){
-      const rewardUSD = (rewardNet/1e8)*btcUSD;
-      const reinvestUSD = rewardUSD*1.05;
-      const thBought = reinvestUSD/28;
-      th += thBought;
     }
   }
 
@@ -183,4 +185,16 @@ async function simulate() {
     type: "line",
     data: {
       labels: labels,
-      datasets: [{ label: "Gain net sat/jour",
+      datasets: [{ label: "Gain net sat/jour", data: gainHistory, borderColor: "green", fill: false, tension: 0.3 }]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{position:'top'}, tooltip:{mode:'index',intersect:false}},
+      scales:{y:{beginAtZero:false, min:gainMin*0.999, max:gainMax*1.001, title:{display:true,text:'Gain net sat/jour'}}}
+    }
+  });
+}
+</script>
+
+</body>
+</html>
