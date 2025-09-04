@@ -138,9 +138,11 @@ async function simulate() {
   for (let day = 1; day <= totalDays; day++) {
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + day - 1);
-    const rewardPerTH = getRewardPerTH(currentDate);
 
-    const rewardBrut = rewardPerTH*th;
+    // Reward brut avec halving
+    const rewardPerTH = getRewardPerTH(currentDate);
+    const rewardBrut = rewardPerTH * th;
+
     const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
     const serviceFee = (0.0089/gmtUSD)*(1-remise/100);
     const totalElectricityFee = electricityFee*th;
