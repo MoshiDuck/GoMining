@@ -53,9 +53,10 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
   <div class="card flex-right">
     <h3>Infos réseau & prix</h3>
     <p>Prix BTC : <span id="btcPrice">--</span></p>
-    <p>Hashrate réseau : <span id="networkHashrate">--</span> TH/s</p>
+    <p>Hashrate réseau : <span id="networkHashrate">--</span> TH/s (croissance 3-5%/mois)</p>
     <p>Prix GoMining (GMT) : <span id="gmtPrice">--</span></p>
     <p>Reward brut / TH : <span id="rewardPerTHDisplay">--</span> sat/jour</p>
+    <p>Prochain Halving : <span id="nextHalving">--</span> (récompense divisée par 2)</p>
   </div>
 </div>
 
@@ -94,6 +95,14 @@ function getRewardPerTH(currentDate) {
     return initialReward / Math.pow(2, halvingsSince);
 }
 
+// Calcul date prochain halving
+function getNextHalving() {
+    const lastHalving = new Date("2024-04-01");
+    const nextHalving = new Date(lastHalving);
+    nextHalving.setFullYear(lastHalving.getFullYear() + 4);
+    return nextHalving.toLocaleDateString();
+}
+
 // Croissance aléatoire du hashrate entre 3 et 5 % par mois
 function getNetworkHashrate(day, baseHashrate) {
     const monthsElapsed = Math.floor(day / 30);
@@ -120,6 +129,7 @@ async function simulate() {
   const baseHashrate = 500000; // TH/s initial
   document.getElementById("networkHashrate").innerText = baseHashrate.toLocaleString();
   document.getElementById("rewardPerTHDisplay").innerText = getRewardPerTH(new Date()).toFixed(2);
+  document.getElementById("nextHalving").innerText = getNextHalving();
 
   let totalDays = 1;
   if (unit == "1") totalDays = timeValue;
