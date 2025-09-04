@@ -277,6 +277,13 @@
             font-size: 0.9rem;
             opacity: 0.8;
         }
+        
+        .last-updated {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
@@ -394,6 +401,10 @@
                         <div class="market-value" id="network-hashrate">-</div>
                     </div>
                 </div>
+                
+                <div class="last-updated" id="last-updated">
+                    Dernière mise à jour: <span id="update-time">-</span>
+                </div>
             </div>
         </div>
     </div>
@@ -411,7 +422,7 @@
             
             // Valeurs réelles fournies par l'utilisateur
             const REAL_BTC_PRICE = 50000.00;
-            const REAL_GMT_PRICE = 0.5157;
+            const REAL_GMT_PRICE = 0.5142;
             const REAL_DIFFICULTY = 129699156960681;
             const REAL_NETWORK_HASHRATE = 200000000; // TH/s
             
@@ -430,13 +441,15 @@
                 const totalDiscount = parseFloat(document.getElementById('discount').value);
                 
                 try {
-                    // Récupérer les données de marché
-                    const [btcPrice, gmtPrice, difficulty, networkHashrate] = await Promise.all([
+                    // Récupérer les données de marché avec gestion des erreurs améliorée
+                    const [btcPrice, gmtPrice, difficulty, networkHashrate] = await Promise.allSettled([
                         getBtcPrice(),
                         getGominingPrice(),
                         getBtcDifficulty(),
                         getBtcHashrate()
-                    ]);
+                    ]).then(results => {
+                        return results.map(result => result.status === 'fulfilled' ? result.value : null);
+                    });
                     
                     // Utiliser les données réelles si les APIs échouent
                     const finalBtcPrice = btcPrice !== null ? btcPrice : REAL_BTC_PRICE;
@@ -459,6 +472,10 @@
                     document.getElementById('gmt-price').textContent = `$${finalGmtPrice.toFixed(4)}`;
                     document.getElementById('difficulty').textContent = finalDifficulty.toLocaleString();
                     document.getElementById('network-hashrate').textContent = `${finalNetworkHashrate.toLocaleString()} TH/s`;
+                    
+                    // Afficher l'heure de mise à jour
+                    const now = new Date();
+                    document.getElementById('update-time').textContent = now.toLocaleTimeString('fr-FR');
                     
                     // Afficher les résultats et cacher le loader
                     document.getElementById('loader').style.display = 'none';
@@ -495,7 +512,7 @@
             async function getGominingPrice() {
                 try {
                     // Utilisation d'un proxy CORS pour éviter les problèmes
-                    const proxyUrl = 'https://corsproxy.io/?';
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
                     const targetUrl = 'https://api.coingecko.com/api/v3/simple/price?ids=gmt-token&vs_currencies=usd';
                     const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
                     
@@ -513,14 +530,15 @@
             
             async function getBtcDifficulty() {
                 try {
-                    const response = await fetch('https://blockchain.info/q/getdifficulty');
+                    // Utilisation d'une API alternative
+                    const response = await fetch('https://mempool.space/api/v1/difficulty-adjustment');
                     
                     if (!response.ok) {
                         throw new Error(`Erreur HTTP: ${response.status}`);
                     }
                     
-                    const text = await response.text();
-                    return parseFloat(text);
+                    const data = await response.json();
+                    return data.difficulty;
                 } catch (error) {
                     console.error("Erreur récupération difficulté BTC:", error);
                     return null;
@@ -529,15 +547,22 @@
             
             async function getBtcHashrate() {
                 try {
-                    const response = await fetch('https://blockchain.info/q/hashrate');
+                    // Utilisation d'une API alternative
+                    const response = await fetch('https://mempool.space/api/v1/mining/hashrate/3d');
                     
                     if (!response.ok) {
                         throw new Error(`Erreur HTTP: ${response.status}`);
                     }
                     
-                    const text = await response.text();
-                    // Conversion de EH/s en TH/s (1 EH/s = 1,000,000 TH/s)
-                    return parseFloat(text) * 1000000;
+                    const data = await response.json();
+                    
+                    // Prendre la dernière valeur disponible
+                    if (data && data.length > 0) {
+                        const latest = data[data.length - 1];
+                        return latest.avgHashrate / 1e12; // Conversion de TH/s
+                    }
+                    
+                    return null;
                 } catch (error) {
                     console.error("Erreur récupération hashrate:", error);
                     return null;
