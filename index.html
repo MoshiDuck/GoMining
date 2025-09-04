@@ -2,34 +2,36 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Simulateur GoMining</title>
+<title>Simulateur GoMining Friendly</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body { font-family: Arial, sans-serif; background: #f7f7f7; color: #333; padding: 20px; }
-h1 { color: #2c3e50; }
-label { display: block; margin-top: 10px; }
-input, select { padding: 5px; margin-top: 5px; width: 100px; }
-button { margin-top: 15px; padding: 10px 20px; background: #27ae60; color: white; border: none; cursor: pointer; }
+body { font-family: Arial, sans-serif; background: #f0f3f5; color: #333; padding: 20px; }
+h1 { color: #2c3e50; text-align: center; }
+.container { max-width: 900px; margin: auto; }
+.card { background: white; padding: 15px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
+label { display: block; margin-top: 10px; font-weight: bold; }
+input, select { padding: 5px; margin-top: 5px; width: 120px; }
+button { margin-top: 15px; padding: 10px 20px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 5px;}
 button:hover { background: #2ecc71; }
-.table-container { margin-top: 20px; overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; background: white; }
+table { border-collapse: collapse; width: 100%; margin-top: 15px; }
 th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
 th { background: #2980b9; color: white; }
 canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px; }
+.info { font-size: 0.9em; color: #555; margin-top: 5px;}
 </style>
 </head>
 <body>
-
+<div class="container">
 <h1>Simulateur GoMining Friendly</h1>
 
-<div>
+<div class="card">
   <label>TH actuel : <input type="number" id="th" value="28"></label>
   <label>Remise (%) : <input type="number" id="remise" value="24.4"></label>
   <label>Watt/TH : <input type="number" id="watt" value="15"></label>
   <label>Stratégie : 
     <select id="strategy">
-      <option value="gomining">Gomining</option>
-      <option value="reinvest">Réinvestissement</option>
+      <option value="gomining">Gomining (cumulé)</option>
+      <option value="reinvest">Réinvestissement (pas cumulés)</option>
     </select>
   </label>
   <label>Période : 
@@ -41,9 +43,10 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
   </label>
   <label>Nombre : <input type="number" id="timeValue" value="5"></label>
   <button onclick="simulate()">Simuler</button>
+  <div class="info">💡 En Gomining les récompenses sont cumulées, en Réinvestissement elles ne le sont pas.</div>
 </div>
 
-<div class="table-container">
+<div class="card table-container">
   <table id="resultTable">
     <thead>
       <tr>
@@ -61,10 +64,14 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
   </table>
 </div>
 
-<canvas id="chart" width="600" height="300"></canvas>
+<div class="card">
+  <canvas id="chart" width="800" height="300"></canvas>
+</div>
+</div>
 
 <script>
-// Simulateur
+let chartInstance = null;
+
 async function simulate() {
   const thInput = parseFloat(document.getElementById("th").value);
   const remise = parseFloat(document.getElementById("remise").value);
@@ -73,13 +80,11 @@ async function simulate() {
   const unit = document.getElementById("unit").value;
   const timeValue = parseInt(document.getElementById("timeValue").value);
 
-  // Récupération des prix via CoinGecko
   const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,gmt-token&vs_currencies=usd,eur");
   const data = await res.json();
   const btcUSD = data.bitcoin.usd;
   const gmtUSD = data["gmt-token"].usd;
 
-  // Conversion période en jours
   let totalDays = 1;
   if (unit == "1") totalDays = timeValue;
   else if (unit == "2") totalDays = timeValue * 30;
@@ -93,15 +98,20 @@ async function simulate() {
   let thHistory = [];
   let gainHistory = [];
 
+  let cumulativeRewardSat = 0;
+
   for (let day = 1; day <= totalDays; day++) {
     // Calcul reward net
     const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
     const serviceFee = (0.0089/gmtUSD)*(1-remise/100);
     const rewardPerTH = 49;
-    const rewardNet = rewardPerTH*th - (electricityFee*th + serviceFee*th); // en satoshi
+    const rewardNet = rewardPerTH*th - (electricityFee*th + serviceFee*th); // satoshi
 
-    // Réinvestissement
-    if (strategy == "reinvest") {
+    let displayReward = rewardNet;
+    if(strategy=="gomining") cumulativeRewardSat += rewardNet; else cumulativeRewardSat = rewardNet;
+
+    // Réinvestissement quotidien
+    if(strategy=="reinvest"){
       const rewardUSD = (rewardNet/1e8)*btcUSD;
       const reinvestUSD = rewardUSD*1.05;
       const thBought = reinvestUSD/28;
@@ -110,40 +120,45 @@ async function simulate() {
 
     // Affichage par mois / année / jour
     if ((unit=="2" && day%30==0) || (unit=="3" && day%365==0) || unit=="1") {
-      const rewardUSD = (rewardNet/1e8)*btcUSD;
+      const rewardUSD = (displayReward/1e8)*btcUSD;
       const rewardGMT = rewardUSD/gmtUSD;
 
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${unit=="1"?day:unit=="2"?day/30:day/365}</td>
         <td>${th.toFixed(6)}</td>
-        <td>${rewardNet.toFixed(2)}</td>
-        <td>${(rewardNet*30).toFixed(2)}</td>
-        <td>${(rewardNet*365).toFixed(2)}</td>
+        <td>${displayReward.toFixed(2)}</td>
+        <td>${(displayReward*30).toFixed(2)}</td>
+        <td>${(displayReward*365).toFixed(2)}</td>
         <td>${rewardGMT.toFixed(6)}</td>
         <td>${rewardUSD.toFixed(6)}</td>
-        <td>${rewardNet.toFixed(2)}</td>
+        <td>${displayReward.toFixed(2)}</td>
       `;
       tbody.appendChild(row);
 
       labels.push(unit=="1"?day:unit=="2"?day/30:day/365);
       thHistory.push(th);
-      gainHistory.push(rewardNet);
+      gainHistory.push(displayReward);
     }
   }
 
-  // Graphique
+  // Mettre à jour ou créer le graphique
+  if(chartInstance) chartInstance.destroy();
   const ctx = document.getElementById("chart").getContext("2d");
-  new Chart(ctx, {
+  chartInstance = new Chart(ctx, {
     type: "line",
     data: {
       labels: labels,
       datasets: [
-        { label: "TH actuel", data: thHistory, borderColor: "blue", fill: false },
-        { label: "Gain en sat", data: gainHistory, borderColor: "green", fill: false }
+        { label: "TH actuel", data: thHistory, borderColor: "blue", fill: false, tension: 0.3 },
+        { label: strategy=="gomining"?"Gain cumulatif sat":"Gain actuel sat", data: gainHistory, borderColor: "green", fill: false, tension: 0.3 }
       ]
     },
-    options: { responsive: true, plugins: { legend: { position: "top" } } }
+    options: {
+      responsive: true,
+      plugins: { legend: { position: "top" }, tooltip: { mode: 'index', intersect: false } },
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 </script>
