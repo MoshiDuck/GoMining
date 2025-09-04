@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Simulateur GoMining avec Halving et Frais</title>
+<title>Simulateur GoMining avec Halving, Frais et Infos</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f3f5; color: #333; padding: 20px; }
@@ -18,32 +18,45 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
 th { background: #2980b9; color: white; }
 canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px; }
 .info { font-size: 0.9em; color: #555; margin-top: 5px;}
+.flex-container { display: flex; flex-wrap: wrap; gap: 20px; }
+.flex-left { flex:1; min-width:280px; }
+.flex-right { flex:1; min-width:250px; }
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Simulateur GoMining avec Halving et Frais</h1>
+<h1>Simulateur GoMining avec Halving, Frais et Infos</h1>
 
-<div class="card">
-  <label>TH actuel : <input type="number" id="th" value="28"></label>
-  <label>Remise (%) : <input type="number" id="remise" value="24.4"></label>
-  <label>Watt/TH : <input type="number" id="watt" value="15"></label>
-  <label>Stratégie : 
-    <select id="strategy">
-      <option value="gomining">Gomining (cumulé)</option>
-      <option value="reinvest">Réinvestissement (pas cumulés)</option>
-    </select>
-  </label>
-  <label>Période : 
-    <select id="unit">
-      <option value="1">Jours</option>
-      <option value="2">Mois</option>
-      <option value="3">Années</option>
-    </select>
-  </label>
-  <label>Nombre : <input type="number" id="timeValue" value="5"></label>
-  <button onclick="simulate()">Simuler</button>
-  <div class="info">💡 Gomining = gains cumulés, Réinvestissement = gains du jour seulement. Halving BTC pris en compte. Frais affichés séparément.</div>
+<div class="flex-container">
+  <div class="card flex-left">
+    <label>TH actuel : <input type="number" id="th" value="28"></label>
+    <label>Remise (%) : <input type="number" id="remise" value="24.4"></label>
+    <label>Watt/TH : <input type="number" id="watt" value="15"></label>
+    <label>Stratégie : 
+      <select id="strategy">
+        <option value="gomining">Gomining (cumulé)</option>
+        <option value="reinvest">Réinvestissement (pas cumulés)</option>
+      </select>
+    </label>
+    <label>Période : 
+      <select id="unit">
+        <option value="1">Jours</option>
+        <option value="2">Mois</option>
+        <option value="3">Années</option>
+      </select>
+    </label>
+    <label>Nombre : <input type="number" id="timeValue" value="5"></label>
+    <button onclick="simulate()">Simuler</button>
+    <div class="info">💡 Gomining = gains cumulés, Réinvestissement = gains du jour seulement. Halving BTC pris en compte. Frais affichés séparément.</div>
+  </div>
+
+  <div class="card flex-right">
+    <h3>Infos réseau & prix</h3>
+    <p>Prix BTC : <span id="btcPrice">--</span></p>
+    <p>Hashrate réseau : <span id="networkHashrate">--</span> TH/s</p>
+    <p>Prix GoMining (GMT) : <span id="gmtPrice">--</span></p>
+    <p>Reward brut / TH : <span id="rewardPerTHDisplay">--</span> sat/jour</p>
+  </div>
 </div>
 
 <div class="card table-container">
@@ -65,7 +78,6 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
 
 <div class="card">
   <canvas id="chart" width="800" height="300"></canvas>
-</div>
 </div>
 
 <script>
@@ -95,6 +107,12 @@ async function simulate() {
   const btcUSD = data.bitcoin.usd;
   const gmtUSD = data["gmt-token"].usd;
 
+  // Mise à jour panneau infos
+  document.getElementById("btcPrice").innerText = `$${btcUSD.toLocaleString()} / €${data.bitcoin.eur.toLocaleString()}`;
+  document.getElementById("gmtPrice").innerText = `$${gmtUSD.toLocaleString()} / €${data["gmt-token"].eur.toLocaleString()}`;
+  document.getElementById("networkHashrate").innerText = (500000).toLocaleString(); // exemple TH/s, à remplacer par API réelle
+  document.getElementById("rewardPerTHDisplay").innerText = getRewardPerTH(new Date()).toFixed(2);
+
   let totalDays = 1;
   if (unit == "1") totalDays = timeValue;
   else if (unit == "2") totalDays = timeValue * 30;
@@ -107,15 +125,11 @@ async function simulate() {
 
   let labels = [], gainHistory = [];
   let cumulativeRewardSat = 0;
-
   const startDate = new Date(); // date de départ
 
   for (let day = 1; day <= totalDays; day++) {
-    // Date correspondante au jour simulé
     const currentDate = new Date(startDate);
     currentDate.setDate(startDate.getDate() + day - 1);
-
-    // Reward ajusté pour le halving
     const rewardPerTH = getRewardPerTH(currentDate);
 
     const rewardBrut = rewardPerTH*th;
