@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suivi Crypto - BTC & GMT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -15,6 +16,8 @@
             --success-color: #27ae60;
             --warning-color: #f39c12;
             --error-color: #e74c3c;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
 
         * {
@@ -25,192 +28,349 @@
         }
 
         body {
-            background-color: var(--background-color);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: var(--text-color);
             line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         header {
             text-align: center;
             margin-bottom: 30px;
-            padding: 20px;
-            background-color: var(--primary-color);
+            padding: 25px;
+            background: linear-gradient(120deg, var(--primary-color), #1a2530);
             color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
         h1 {
             margin-bottom: 10px;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
 
         .last-updated {
-            font-size: 0.9rem;
-            opacity: 0.8;
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 10px;
         }
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
 
         .card {
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .card-title {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 600;
+            color: var(--primary-color);
         }
 
         .card-icon {
-            font-size: 1.5rem;
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 50%;
         }
 
         .card-value {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            margin: 10px 0;
+            margin: 15px 0;
+            color: var(--primary-color);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
         }
 
         .card-change {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            margin-top: 5px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 10px;
         }
 
         .positive {
-            background-color: rgba(39, 174, 96, 0.2);
+            background-color: rgba(39, 174, 96, 0.15);
             color: var(--success-color);
         }
 
         .negative {
-            background-color: rgba(231, 76, 60, 0.2);
+            background-color: rgba(231, 76, 60, 0.15);
             color: var(--error-color);
         }
 
         .card-footer {
-            margin-top: 15px;
-            font-size: 0.8rem;
+            margin-top: 20px;
+            font-size: 0.85rem;
             color: #777;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .loading {
-            opacity: 0.7;
-            pointer-events: none;
+            position: relative;
+            color: transparent;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            margin: -15px 0 0 -15px;
+            border: 3px solid rgba(52, 152, 219, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--secondary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .error-message {
             color: var(--error-color);
             font-weight: 600;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .refresh-btn {
             display: block;
             margin: 0 auto;
-            padding: 10px 20px;
-            background-color: var(--secondary-color);
+            padding: 14px 28px;
+            background: linear-gradient(120deg, var(--secondary-color), #2980b9);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
         }
 
         .refresh-btn:hover {
-            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(1px);
+        }
+
+        .refresh-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         footer {
             text-align: center;
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 40px;
+            padding: 25px;
             color: #777;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-live {
+            background-color: var(--success-color);
+        }
+
+        .status-offline {
+            background-color: var(--error-color);
         }
 
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
             }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification-icon {
+            font-size: 1.2rem;
+        }
+
+        .error .notification-icon {
+            color: var(--error-color);
+        }
+
+        .success .notification-icon {
+            color: var(--success-color);
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Suivi des Cryptomonnaies</h1>
-        <p class="last-updated">Dernière mise à jour: <span id="last-update-time">-</span></p>
-    </header>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Suivi des Cryptomonnaies</h1>
+            <p class="last-updated">Dernière mise à jour: <span id="last-update-time">-</span></p>
+        </header>
 
-    <main>
-        <div class="dashboard">
-            <div class="card" id="btc-price-card">
-                <div class="card-header">
-                    <div class="card-title">Prix Bitcoin (BTC)</div>
-                    <div class="card-icon">₿</div>
+        <main>
+            <div class="dashboard">
+                <div class="card" id="btc-price-card">
+                    <div class="card-header">
+                        <div class="card-title">Prix Bitcoin (BTC)</div>
+                        <div class="card-icon">₿</div>
+                    </div>
+                    <div class="card-value" id="btc-price">Chargement...</div>
+                    <div class="card-change" id="btc-change">24h: -</div>
+                    <div class="card-footer">
+                        <span>Données fournies par CoinGecko</span>
+                        <span class="status-indicator status-live"></span>
+                    </div>
                 </div>
-                <div class="card-value" id="btc-price">Chargement...</div>
-                <div class="card-change" id="btc-change">24h: -</div>
-                <div class="card-footer">
-                    Données fournies par CoinGecko
+
+                <div class="card" id="btc-hashrate-card">
+                    <div class="card-header">
+                        <div class="card-title">Hashrate Bitcoin</div>
+                        <div class="card-icon"><i class="fas fa-server"></i></div>
+                    </div>
+                    <div class="card-value" id="btc-hashrate">Chargement...</div>
+                    <div class="card-footer">
+                        <span>Données fournies par CoinGecko</span>
+                        <span class="status-indicator status-live"></span>
+                    </div>
+                </div>
+
+                <div class="card" id="gmt-price-card">
+                    <div class="card-header">
+                        <div class="card-title">Prix GMT Token</div>
+                        <div class="card-icon"><i class="fas fa-coins"></i></div>
+                    </div>
+                    <div class="card-value" id="gmt-price">Chargement...</div>
+                    <div class="card-change" id="gmt-change">24h: -</div>
+                    <div class="card-footer">
+                        <span>Données fournies par CoinGecko</span>
+                        <span class="status-indicator status-live"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="card" id="btc-hashrate-card">
-                <div class="card-header">
-                    <div class="card-title">Hashrate Bitcoin</div>
-                    <div class="card-icon">⛏️</div>
-                </div>
-                <div class="card-value" id="btc-hashrate">Chargement...</div>
-                <div class="card-footer">
-                    Données fournies par CoinGecko
-                </div>
-            </div>
+            <button class="refresh-btn" id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Actualiser les données
+            </button>
+        </main>
 
-            <div class="card" id="gmt-price-card">
-                <div class="card-header">
-                    <div class="card-title">Prix GMT Token</div>
-                    <div class="card-icon">🪙</div>
-                </div>
-                <div class="card-value" id="gmt-price">Chargement...</div>
-                <div class="card-change" id="gmt-change">24h: -</div>
-                <div class="card-footer">
-                    Données fournies par CoinGecko
-                </div>
-            </div>
+        <footer>
+            <p>Les données sont actualisées automatiquement toutes les 5 minutes</p>
+            <p>⚠️ Ce site est à but informatif uniquement. Les investissements en cryptomonnaies sont risqués.</p>
+        </footer>
+    </div>
+
+    <div class="notification error" id="error-notification">
+        <i class="fas fa-exclamation-circle notification-icon"></i>
+        <div class="notification-content">
+            <div class="notification-title">Erreur</div>
+            <div class="notification-message" id="error-message"></div>
         </div>
-
-        <button class="refresh-btn" id="refresh-btn">Actualiser les données</button>
-    </main>
-
-    <footer>
-        <p>Les données sont actualisées automatiquement toutes les 5 minutes</p>
-        <p>⚠️ Ce site est à but informatif uniquement. Les investissements en cryptomonnaies sont risqués.</p>
-    </footer>
+    </div>
 
     <script>
         // Configuration
@@ -226,11 +386,15 @@
         const gmtChangeElement = document.getElementById('gmt-change');
         const lastUpdateTimeElement = document.getElementById('last-update-time');
         const refreshButton = document.getElementById('refresh-btn');
+        const errorNotification = document.getElementById('error-notification');
+        const errorMessageElement = document.getElementById('error-message');
         const cards = document.querySelectorAll('.card');
+        const statusIndicators = document.querySelectorAll('.status-indicator');
 
         // Variables d'état
         let updateIntervalId = null;
         let lastSuccessfulUpdate = null;
+        let isFirstLoad = true;
 
         // Formateurs
         const formatCurrency = (value, currency = 'USD') => {
@@ -271,11 +435,26 @@
             });
             
             refreshButton.disabled = isLoading;
-            refreshButton.textContent = isLoading ? 'Actualisation...' : 'Actualiser les données';
+            refreshButton.innerHTML = isLoading 
+                ? '<i class="fas fa-circle-notch fa-spin"></i> Actualisation...' 
+                : '<i class="fas fa-sync-alt"></i> Actualiser les données';
         };
 
-        const showError = (element, message) => {
-            element.innerHTML = `<span class="error-message">${message}</span>`;
+        const showError = (message) => {
+            errorMessageElement.textContent = message;
+            errorNotification.classList.add('show');
+            
+            // Masquer la notification après 5 secondes
+            setTimeout(() => {
+                errorNotification.classList.remove('show');
+            }, 5000);
+        };
+
+        const updateStatusIndicators = (isOnline) => {
+            statusIndicators.forEach(indicator => {
+                indicator.classList.remove('status-live', 'status-offline');
+                indicator.classList.add(isOnline ? 'status-live' : 'status-offline');
+            });
         };
 
         // Fonctions API
@@ -284,6 +463,9 @@
                 const response = await fetch(url, options);
                 
                 if (!response.ok) {
+                    if (response.status === 429) {
+                        throw new Error('Limite de requêtes API dépassée. Veuillez patienter.');
+                    }
                     throw new Error(`Erreur HTTP: ${response.status}`);
                 }
                 
@@ -355,6 +537,9 @@
             // Mise à jour de l'horodatage
             lastSuccessfulUpdate = Date.now();
             lastUpdateTimeElement.textContent = formatTimestamp(lastSuccessfulUpdate);
+            
+            // Mettre à jour les indicateurs de statut
+            updateStatusIndicators(true);
         };
 
         // Fonction principale de mise à jour
@@ -377,18 +562,17 @@
                     startAutoUpdate();
                 }
                 
+                // Cacher la notification d'erreur si elle est affichée
+                errorNotification.classList.remove('show');
+                
             } catch (error) {
                 console.error('Erreur lors de la mise à jour des données:', error);
                 
-                // Affichage des erreurs spécifiques
-                if (error.message.includes('Bitcoin')) {
-                    showError(btcPriceElement, 'Erreur données BTC');
-                    showError(btcHashrateElement, 'Données indisponibles');
-                }
+                // Afficher l'erreur dans la notification
+                showError(error.message);
                 
-                if (error.message.includes('GMT')) {
-                    showError(gmtPriceElement, 'Erreur données GMT');
-                }
+                // Mettre à jour les indicateurs de statut
+                updateStatusIndicators(false);
                 
                 // Arrêt de l'auto-actualisation en cas d'erreur
                 if (updateIntervalId !== null) {
@@ -397,11 +581,12 @@
                 }
                 
                 // Nouvelle tentative après un délai
-                setTimeout(updateAllData, RETRY_DELAY);
+                setTimeout(() => updateAllData(false), RETRY_DELAY);
             } finally {
                 if (isManualRefresh) {
                     setLoadingState(false);
                 }
+                isFirstLoad = false;
             }
         };
 
@@ -429,7 +614,8 @@
             // Vérification périodique de la fraîcheur des données
             setInterval(() => {
                 if (lastSuccessfulUpdate && (Date.now() - lastSuccessfulUpdate) > UPDATE_INTERVAL * 1.5) {
-                    lastUpdateTimeElement.innerHTML = `<span class="error-message">Données possibly obsolètes</span>`;
+                    lastUpdateTimeElement.innerHTML = `<span class="error-message">Données possiblement obsolètes</span>`;
+                    updateStatusIndicators(false);
                 }
             }, 60000); // Vérifie toutes les minutes
         };
