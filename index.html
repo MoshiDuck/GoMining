@@ -109,7 +109,7 @@
             color: var(--primary-color);
         }
         
-        input[type="number"], select {
+        input[type="number"] {
             width: 100%;
             padding: 15px 15px 15px 45px;
             border: 2px solid #ddd;
@@ -118,31 +118,10 @@
             transition: all 0.3s;
         }
         
-        input[type="number"]:focus, select:focus {
+        input[type="number"]:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-        
-        .unit-selector {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .unit-option {
-            padding: 8px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .unit-option.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
         }
         
         button {
@@ -318,23 +297,21 @@
             </div>
             
             <form id="calculator-form">
-                <div class="form-group">
-                    <label for="power">Puissance de minage</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <input type="number" id="power" step="0.01" required placeholder="Ex: 1000" value="1000">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="th">Puissance de minage (TH/s)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <input type="number" id="th" step="0.01" required placeholder="Ex: 1000" value="1000">
+                        </div>
                     </div>
-                    <div class="unit-selector">
-                        <div class="unit-option active" id="unit-th">TH/s</div>
-                        <div class="unit-option" id="unit-w">W</div>
-                    </div>
-                </div>
-                
-                <div class="form-group" id="efficiency-container" style="display: none;">
-                    <label for="efficiency">Efficacité énergétique (W/TH)</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-bolt"></i>
-                        <input type="number" id="efficiency" step="0.1" value="30" placeholder="Ex: 30">
+                    
+                    <div class="form-group">
+                        <label for="wth">Efficacité énergétique (W/TH)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-bolt"></i>
+                            <input type="number" id="wth" step="0.1" required placeholder="Ex: 30" value="30">
+                        </div>
                     </div>
                 </div>
                 
@@ -371,6 +348,11 @@
                     <div class="result-item">
                         <span class="result-label"><i class="fas fa-coins"></i> Récompense quotidienne:</span>
                         <span class="result-value" id="reward">-</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label"><i class="fas fa-bolt"></i> Consommation électrique:</span>
+                        <span class="result-value" id="power-consumption">-</span>
                     </div>
                     
                     <div class="result-item">
@@ -425,7 +407,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Paramètres prédéfinis (valeurs standards de l'industrie)
             const ELECTRICITY_RATE = 0.05; // USD/kWh
-            const DEFAULT_EFFICIENCY = 30; // W/TH
             const SERVICE_FEE = 0.0089; // USD/TH/jour
             
             // Valeurs réelles fournies par l'utilisateur
@@ -433,25 +414,6 @@
             const REAL_GMT_PRICE = 0.5157;
             const REAL_DIFFICULTY = 129699156960681;
             const REAL_NETWORK_HASHRATE = 200000000; // TH/s
-            
-            // Gestion du changement d'unité
-            const unitTh = document.getElementById('unit-th');
-            const unitW = document.getElementById('unit-w');
-            const efficiencyContainer = document.getElementById('efficiency-container');
-            
-            unitTh.addEventListener('click', function() {
-                unitTh.classList.add('active');
-                unitW.classList.remove('active');
-                efficiencyContainer.style.display = 'none';
-                document.getElementById('power').placeholder = 'Ex: 1000';
-            });
-            
-            unitW.addEventListener('click', function() {
-                unitW.classList.add('active');
-                unitTh.classList.remove('active');
-                efficiencyContainer.style.display = 'block';
-                document.getElementById('power').placeholder = 'Ex: 30000';
-            });
             
             // Gestion de la soumission du formulaire
             document.getElementById('calculator-form').addEventListener('submit', async function(e) {
@@ -463,13 +425,9 @@
                 document.getElementById('success-message').style.display = 'none';
                 document.getElementById('results').style.display = 'none';
                 
-                const power = parseFloat(document.getElementById('power').value);
+                const th = parseFloat(document.getElementById('th').value);
+                const wth = parseFloat(document.getElementById('wth').value);
                 const totalDiscount = parseFloat(document.getElementById('discount').value);
-                const isWatts = unitW.classList.contains('active');
-                const efficiency = isWatts ? parseFloat(document.getElementById('efficiency').value) : DEFAULT_EFFICIENCY;
-                
-                // Convertir la puissance en TH/s
-                const th = isWatts ? power / efficiency : power;
                 
                 try {
                     // Récupérer les données de marché
@@ -487,12 +445,13 @@
                     const finalNetworkHashrate = networkHashrate !== null ? networkHashrate : REAL_NETWORK_HASHRATE;
                     
                     // Calculer les récompenses et frais
-                    const [reward, electricityFee, serviceFeeResult, profit] = calculateFeesAndRewards(
-                        th, totalDiscount, finalBtcPrice, finalGmtPrice
+                    const [reward, powerConsumption, electricityFee, serviceFeeResult, profit] = calculateFeesAndRewards(
+                        th, wth, totalDiscount, finalBtcPrice, finalGmtPrice
                     );
                     
                     // Afficher les résultats
                     document.getElementById('reward').textContent = `${reward.toFixed(2)} sat/jour`;
+                    document.getElementById('power-consumption').textContent = `${powerConsumption.toFixed(2)} kWh/jour`;
                     document.getElementById('electricity-fee').textContent = `${electricityFee.toFixed(2)} GMT/jour`;
                     document.getElementById('service-fee').textContent = `${serviceFeeResult.toFixed(2)} GMT/jour`;
                     document.getElementById('profit').textContent = `${profit.toFixed(2)} GMT/jour`;
@@ -585,15 +544,18 @@
                 }
             }
             
-            function calculateFeesAndRewards(th, totalDiscount, btcPrice, gmtPrice) {
+            function calculateFeesAndRewards(th, wth, totalDiscount, btcPrice, gmtPrice) {
                 const rewardPerTh = 49; // satoshi par TH
                 const reward = rewardPerTh * th;
                 
-                // Frais d'électricité (formule mise à jour)
-                const electricityCost = (ELECTRICITY_RATE * 24 * DEFAULT_EFFICIENCY) / gmtPrice / 1000;
-                const electricityFee = electricityCost * th * (1 - totalDiscount / 100);
+                // Calcul de la consommation électrique
+                const powerConsumption = (th * wth * 24) / 1000; // kWh/jour
                 
-                // Frais de service (formule mise à jour)
+                // Frais d'électricité
+                const electricityCostUSD = powerConsumption * ELECTRICITY_RATE;
+                const electricityFee = electricityCostUSD / gmtPrice * (1 - totalDiscount / 100);
+                
+                // Frais de service
                 const serviceCost = SERVICE_FEE / gmtPrice;
                 const serviceFeeResult = serviceCost * th * (1 - totalDiscount / 100);
                 
@@ -601,7 +563,7 @@
                 const rewardInGmt = (reward * btcPrice / 100000000) / gmtPrice; // Conversion satoshi → BTC → USD → GMT
                 const profit = rewardInGmt - electricityFee - serviceFeeResult;
                 
-                return [reward, electricityFee, serviceFeeResult, profit];
+                return [reward, powerConsumption, electricityFee, serviceFeeResult, profit];
             }
         });
     </script>
