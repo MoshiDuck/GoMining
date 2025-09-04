@@ -1,632 +1,152 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suivi Crypto - BTC & GMT</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --background-color: #f5f7fa;
-            --card-color: #ffffff;
-            --text-color: #333333;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-            --border-radius: 12px;
-            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 25px;
-            background: linear-gradient(120deg, var(--primary-color), #1a2530);
-            color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-        }
-
-        h1 {
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .last-updated {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-top: 10px;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background-color: var(--card-color);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            box-shadow: var(--box-shadow);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .card-icon {
-            font-size: 2rem;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(52, 152, 219, 0.1);
-            border-radius: 50%;
-        }
-
-        .card-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin: 15px 0;
-            color: var(--primary-color);
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-        }
-
-        .card-change {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .positive {
-            background-color: rgba(39, 174, 96, 0.15);
-            color: var(--success-color);
-        }
-
-        .negative {
-            background-color: rgba(231, 76, 60, 0.15);
-            color: var(--error-color);
-        }
-
-        .card-footer {
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: #777;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .loading {
-            position: relative;
-            color: transparent;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 30px;
-            height: 30px;
-            margin: -15px 0 0 -15px;
-            border: 3px solid rgba(52, 152, 219, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--secondary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            color: var(--error-color);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .refresh-btn {
-            display: block;
-            margin: 0 auto;
-            padding: 14px 28px;
-            background: linear-gradient(120deg, var(--secondary-color), #2980b9);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(52, 152, 219, 0.4);
-        }
-
-        .refresh-btn:active {
-            transform: translateY(1px);
-        }
-
-        .refresh-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 25px;
-            color: #777;
-            font-size: 0.95rem;
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-live {
-            background-color: var(--success-color);
-        }
-
-        .status-offline {
-            background-color: var(--error-color);
-        }
-
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .card-value {
-                font-size: 1.8rem;
-            }
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.error {
-            border-left: 4px solid var(--error-color);
-        }
-
-        .notification.success {
-            border-left: 4px solid var(--success-color);
-        }
-
-        .notification-icon {
-            font-size: 1.2rem;
-        }
-
-        .error .notification-icon {
-            color: var(--error-color);
-        }
-
-        .success .notification-icon {
-            color: var(--success-color);
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Simulateur GoMining</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial, sans-serif; background: #f7f7f7; color: #333; padding: 20px; }
+h1 { color: #2c3e50; }
+label { display: block; margin-top: 10px; }
+input, select { padding: 5px; margin-top: 5px; width: 100px; }
+button { margin-top: 15px; padding: 10px 20px; background: #27ae60; color: white; border: none; cursor: pointer; }
+button:hover { background: #2ecc71; }
+.table-container { margin-top: 20px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; background: white; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+th { background: #2980b9; color: white; }
+canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-chart-line"></i> Suivi des Cryptomonnaies</h1>
-            <p class="last-updated">Dernière mise à jour: <span id="last-update-time">-</span></p>
-        </header>
 
-        <main>
-            <div class="dashboard">
-                <div class="card" id="btc-price-card">
-                    <div class="card-header">
-                        <div class="card-title">Prix Bitcoin (BTC)</div>
-                        <div class="card-icon">₿</div>
-                    </div>
-                    <div class="card-value" id="btc-price">Chargement...</div>
-                    <div class="card-footer">
-                        <span>Données fournies par CoinGecko</span>
-                        <span class="status-indicator status-live"></span>
-                    </div>
-                </div>
+<h1>Simulateur GoMining Friendly</h1>
 
-                <div class="card" id="btc-hashrate-card">
-                    <div class="card-header">
-                        <div class="card-title">Hashrate Bitcoin</div>
-                        <div class="card-icon"><i class="fas fa-server"></i></div>
-                    </div>
-                    <div class="card-value" id="btc-hashrate">Chargement...</div>
-                    <div class="card-footer">
-                        <span>Données fournies par Blockchain.com</span>
-                        <span class="status-indicator status-live"></span>
-                    </div>
-                </div>
+<div>
+  <label>TH actuel : <input type="number" id="th" value="28"></label>
+  <label>Remise (%) : <input type="number" id="remise" value="24.4"></label>
+  <label>Watt/TH : <input type="number" id="watt" value="15"></label>
+  <label>Stratégie : 
+    <select id="strategy">
+      <option value="gomining">Gomining</option>
+      <option value="reinvest">Réinvestissement</option>
+    </select>
+  </label>
+  <label>Période : 
+    <select id="unit">
+      <option value="1">Jours</option>
+      <option value="2">Mois</option>
+      <option value="3">Années</option>
+    </select>
+  </label>
+  <label>Nombre : <input type="number" id="timeValue" value="5"></label>
+  <button onclick="simulate()">Simuler</button>
+</div>
 
-                <div class="card" id="gmt-price-card">
-                    <div class="card-header">
-                        <div class="card-title">Prix GMT Token</div>
-                        <div class="card-icon"><i class="fas fa-coins"></i></div>
-                    </div>
-                    <div class="card-value" id="gmt-price">Chargement...</div>
-                    <div class="card-footer">
-                        <span>Données fournies par CoinGecko</span>
-                        <span class="status-indicator status-live"></span>
-                    </div>
-                </div>
-            </div>
+<div class="table-container">
+  <table id="resultTable">
+    <thead>
+      <tr>
+        <th>Unité</th>
+        <th>Puissance TH</th>
+        <th>Gain/Jour</th>
+        <th>Gain/Mois</th>
+        <th>Gain/Année</th>
+        <th>GMT</th>
+        <th>USD</th>
+        <th>Satoshi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-            <button class="refresh-btn" id="refresh-btn">
-                <i class="fas fa-sync-alt"></i> Actualiser les données
-            </button>
-        </main>
+<canvas id="chart" width="600" height="300"></canvas>
 
-        <footer>
-            <p>Les données sont actualisées automatiquement toutes les 5 minutes</p>
-            <p>⚠️ Ce site est à but informatif uniquement. Les investissements en cryptomonnaies sont risqués.</p>
-        </footer>
-    </div>
+<script>
+// Simulateur
+async function simulate() {
+  const thInput = parseFloat(document.getElementById("th").value);
+  const remise = parseFloat(document.getElementById("remise").value);
+  const watt = parseFloat(document.getElementById("watt").value);
+  const strategy = document.getElementById("strategy").value;
+  const unit = document.getElementById("unit").value;
+  const timeValue = parseInt(document.getElementById("timeValue").value);
 
-    <div class="notification error" id="error-notification">
-        <i class="fas fa-exclamation-circle notification-icon"></i>
-        <div class="notification-content">
-            <div class="notification-title">Erreur</div>
-            <div class="notification-message" id="error-message"></div>
-        </div>
-    </div>
+  // Récupération des prix via CoinGecko
+  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,gmt-token&vs_currencies=usd,eur");
+  const data = await res.json();
+  const btcUSD = data.bitcoin.usd;
+  const gmtUSD = data["gmt-token"].usd;
 
-    <script>
-        // Configuration
-        const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
-        const BLOCKCHAIN_API_BASE = 'https://api.blockchain.info';
-        const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes en millisecondes
-        const RETRY_DELAY = 30000; // 30 secondes en cas d'erreur
+  // Conversion période en jours
+  let totalDays = 1;
+  if (unit == "1") totalDays = timeValue;
+  else if (unit == "2") totalDays = timeValue * 30;
+  else if (unit == "3") totalDays = timeValue * 365;
 
-        // Éléments DOM
-        const btcPriceElement = document.getElementById('btc-price');
-        const btcHashrateElement = document.getElementById('btc-hashrate');
-        const gmtPriceElement = document.getElementById('gmt-price');
-        const lastUpdateTimeElement = document.getElementById('last-update-time');
-        const refreshButton = document.getElementById('refresh-btn');
-        const errorNotification = document.getElementById('error-notification');
-        const errorMessageElement = document.getElementById('error-message');
-        const cards = document.querySelectorAll('.card');
-        const statusIndicators = document.querySelectorAll('.status-indicator');
+  let th = thInput;
+  let tbody = document.querySelector("#resultTable tbody");
+  tbody.innerHTML = "";
 
-        // Variables d'état
-        let updateIntervalId = null;
-        let lastSuccessfulUpdate = null;
-        let isFirstLoad = true;
+  let labels = [];
+  let thHistory = [];
+  let gainHistory = [];
 
-        // Formateurs
-        const formatCurrency = (value, currency = 'USD') => {
-            return new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: currency,
-                minimumFractionDigits: value < 1 ? 4 : 2,
-                maximumFractionDigits: value < 1 ? 6 : 2
-            }).format(value);
-        };
+  for (let day = 1; day <= totalDays; day++) {
+    // Calcul reward net
+    const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
+    const serviceFee = (0.0089/gmtUSD)*(1-remise/100);
+    const rewardPerTH = 49;
+    const rewardNet = rewardPerTH*th - (electricityFee*th + serviceFee*th); // en satoshi
 
-        const formatHashrate = (hashrate) => {
-            if (hashrate >= 1e18) {
-                return (hashrate / 1e18).toFixed(2) + ' EH/s';
-            } else if (hashrate >= 1e15) {
-                return (hashrate / 1e15).toFixed(2) + ' PH/s';
-            } else {
-                return (hashrate / 1e12).toFixed(2) + ' TH/s';
-            }
-        };
+    // Réinvestissement
+    if (strategy == "reinvest") {
+      const rewardUSD = (rewardNet/1e8)*btcUSD;
+      const reinvestUSD = rewardUSD*1.05;
+      const thBought = reinvestUSD/28;
+      th += thBought;
+    }
 
-        const formatTimestamp = (timestamp) => {
-            return new Date(timestamp).toLocaleTimeString('fr-FR');
-        };
+    // Affichage par mois / année / jour
+    if ((unit=="2" && day%30==0) || (unit=="3" && day%365==0) || unit=="1") {
+      const rewardUSD = (rewardNet/1e8)*btcUSD;
+      const rewardGMT = rewardUSD/gmtUSD;
 
-        // Fonctions d'état UI
-        const setLoadingState = (isLoading) => {
-            cards.forEach(card => {
-                if (isLoading) {
-                    card.classList.add('loading');
-                } else {
-                    card.classList.remove('loading');
-                }
-            });
-            
-            refreshButton.disabled = isLoading;
-            refreshButton.innerHTML = isLoading 
-                ? '<i class="fas fa-circle-notch fa-spin"></i> Actualisation...' 
-                : '<i class="fas fa-sync-alt"></i> Actualiser les données';
-        };
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${unit=="1"?day:unit=="2"?day/30:day/365}</td>
+        <td>${th.toFixed(6)}</td>
+        <td>${rewardNet.toFixed(2)}</td>
+        <td>${(rewardNet*30).toFixed(2)}</td>
+        <td>${(rewardNet*365).toFixed(2)}</td>
+        <td>${rewardGMT.toFixed(6)}</td>
+        <td>${rewardUSD.toFixed(6)}</td>
+        <td>${rewardNet.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
 
-        const showError = (message) => {
-            errorMessageElement.textContent = message;
-            errorNotification.classList.add('show');
-            
-            // Masquer la notification après 5 secondes
-            setTimeout(() => {
-                errorNotification.classList.remove('show');
-            }, 5000);
-        };
+      labels.push(unit=="1"?day:unit=="2"?day/30:day/365);
+      thHistory.push(th);
+      gainHistory.push(rewardNet);
+    }
+  }
 
-        const updateStatusIndicators = (isOnline) => {
-            statusIndicators.forEach(indicator => {
-                indicator.classList.remove('status-live', 'status-offline');
-                indicator.classList.add(isOnline ? 'status-live' : 'status-offline');
-            });
-        };
+  // Graphique
+  const ctx = document.getElementById("chart").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "TH actuel", data: thHistory, borderColor: "blue", fill: false },
+        { label: "Gain en sat", data: gainHistory, borderColor: "green", fill: false }
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: "top" } } }
+  });
+}
+</script>
 
-        // Fonctions API
-        const fetchWithErrorHandling = async (url, options = {}) => {
-            try {
-                const response = await fetch(url, options);
-                
-                if (!response.ok) {
-                    if (response.status === 429) {
-                        throw new Error('Limite de requêtes API dépassée. Veuillez patienter.');
-                    }
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error('Erreur de récupération:', error);
-                throw new Error(`Échec de la récupération des données: ${error.message}`);
-            }
-        };
-
-        const fetchBitcoinPrice = async () => {
-            try {
-                const data = await fetchWithErrorHandling(
-                    `${COINGECKO_API_BASE}/simple/price?ids=bitcoin&vs_currencies=usd`
-                );
-                
-                if (!data.bitcoin || data.bitcoin.usd === undefined) {
-                    throw new Error('Données de prix Bitcoin non disponibles');
-                }
-                
-                return data.bitcoin.usd;
-            } catch (error) {
-                console.error('Erreur dans fetchBitcoinPrice:', error);
-                throw new Error(`Impossible de récupérer le prix Bitcoin: ${error.message}`);
-            }
-        };
-
-        const fetchBitcoinHashrate = async () => {
-            try {
-                const data = await fetchWithErrorHandling(
-                    `${BLOCKCHAIN_API_BASE}/charts/hash-rate?format=json&timespan=30days`
-                );
-                
-                if (!data.values || data.values.length === 0) {
-                    throw new Error('Données de hashrate non disponibles');
-                }
-                
-                // Prendre la dernière valeur disponible
-                const lastValue = data.values[data.values.length - 1];
-                return lastValue.y;
-            } catch (error) {
-                console.error('Erreur dans fetchBitcoinHashrate:', error);
-                throw new Error(`Impossible de récupérer le hashrate Bitcoin: ${error.message}`);
-            }
-        };
-
-        const fetchGMTPrice = async () => {
-            try {
-                const data = await fetchWithErrorHandling(
-                    `${COINGECKO_API_BASE}/simple/price?ids=gmt-token&vs_currencies=usd`
-                );
-                
-                if (!data['gmt-token'] || data['gmt-token'].usd === undefined) {
-                    throw new Error('Données de prix GMT non disponibles');
-                }
-                
-                return data['gmt-token'].usd;
-            } catch (error) {
-                console.error('Erreur dans fetchGMTPrice:', error);
-                throw new Error(`Impossible de récupérer le prix GMT: ${error.message}`);
-            }
-        };
-
-        // Mise à jour de l'interface
-        const updateUI = (btcPrice, btcHashrate, gmtPrice) => {
-            // Mise à jour des données Bitcoin
-            if (btcPrice !== undefined) {
-                btcPriceElement.textContent = formatCurrency(btcPrice, 'USD');
-            }
-            
-            if (btcHashrate !== undefined) {
-                btcHashrateElement.textContent = formatHashrate(btcHashrate);
-            }
-            
-            // Mise à jour des données GMT
-            if (gmtPrice !== undefined) {
-                gmtPriceElement.textContent = formatCurrency(gmtPrice, 'USD');
-            }
-            
-            // Mise à jour de l'horodatage
-            lastSuccessfulUpdate = Date.now();
-            lastUpdateTimeElement.textContent = formatTimestamp(lastSuccessfulUpdate);
-            
-            // Mettre à jour les indicateurs de statut
-            updateStatusIndicators(true);
-        };
-
-        // Fonction principale de mise à jour
-        const updateAllData = async (isManualRefresh = false) => {
-            if (isManualRefresh) {
-                setLoadingState(true);
-            }
-            
-            try {
-                // Récupération en parallèle des données
-                const [btcPrice, btcHashrate, gmtPrice] = await Promise.all([
-                    fetchBitcoinPrice(),
-                    fetchBitcoinHashrate(),
-                    fetchGMTPrice()
-                ]);
-                
-                updateUI(btcPrice, btcHashrate, gmtPrice);
-                
-                // Réactivation des intervalles en cas de succès après une erreur
-                if (updateIntervalId === null) {
-                    startAutoUpdate();
-                }
-                
-                // Cacher la notification d'erreur si elle est affichée
-                errorNotification.classList.remove('show');
-                
-            } catch (error) {
-                console.error('Erreur lors de la mise à jour des données:', error);
-                
-                // Afficher l'erreur dans la notification
-                showError(error.message);
-                
-                // Mettre à jour les indicateurs de statut
-                updateStatusIndicators(false);
-                
-                // Arrêt de l'auto-actualisation en cas d'erreur
-                if (updateIntervalId !== null) {
-                    clearInterval(updateIntervalId);
-                    updateIntervalId = null;
-                }
-                
-                // Nouvelle tentative après un délai
-                setTimeout(() => updateAllData(false), RETRY_DELAY);
-            } finally {
-                if (isManualRefresh) {
-                    setLoadingState(false);
-                }
-                isFirstLoad = false;
-            }
-        };
-
-        // Gestion de l'auto-actualisation
-        const startAutoUpdate = () => {
-            if (updateIntervalId !== null) {
-                clearInterval(updateIntervalId);
-            }
-            
-            updateIntervalId = setInterval(() => {
-                updateAllData(false);
-            }, UPDATE_INTERVAL);
-        };
-
-        // Initialisation
-        const init = () => {
-            // Premier chargement des données
-            updateAllData(true);
-            
-            // Configuration du bouton de rafraîchissement
-            refreshButton.addEventListener('click', () => {
-                updateAllData(true);
-            });
-            
-            // Vérification périodique de la fraîcheur des données
-            setInterval(() => {
-                if (lastSuccessfulUpdate && (Date.now() - lastSuccessfulUpdate) > UPDATE_INTERVAL * 1.5) {
-                    lastUpdateTimeElement.innerHTML = `<span class="error-message">Données possiblement obsolètes</span>`;
-                    updateStatusIndicators(false);
-                }
-            }, 60000); // Vérifie toutes les minutes
-        };
-
-        // Démarrage de l'application
-        init();
-    </script>
 </body>
 </html>
