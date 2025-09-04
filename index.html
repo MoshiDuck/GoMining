@@ -56,7 +56,8 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
     <p>Hashrate réseau : <span id="networkHashrate">--</span> TH/s (croissance 3-5%/mois)</p>
     <p>Prix GoMining (GMT) : <span id="gmtPrice">--</span></p>
     <p>Reward brut / TH : <span id="rewardPerTHDisplay">--</span> sat/jour</p>
-    <p>Prochain Halving : <span id="nextHalving">--</span> (récompense divisée par 2)</p>
+    <p>Prochain Halving : <span id="nextHalving">--</span> (récompense divisée par 2 à chaque halving)</p>
+    <p>Facteur division actuel : <span id="halvingFactor">--</span></p>
   </div>
 </div>
 
@@ -86,21 +87,26 @@ let chartInstance = null;
 
 // Calcul du reward par TH selon la date et les halvings
 function getRewardPerTH(currentDate) {
-    const lastHalving = new Date("2024-04-01");
-    const initialReward = 49; // satoshi/TH/jour avant halving
-    const yearDiff = currentDate.getFullYear() - lastHalving.getFullYear();
-    const monthDiff = currentDate.getMonth() - lastHalving.getMonth();
-    const totalYears = yearDiff + monthDiff / 12;
-    const halvingsSince = Math.floor(totalYears / 4);
+    const firstHalving = new Date("2012-11-28"); // date du premier halving historique BTC
+    const initialReward = 50; // satoshi/TH/jour avant halving
+    let halvingsSince = Math.floor((currentDate - firstHalving)/(1000*60*60*24*365*4)); // tous les 4 ans
     return initialReward / Math.pow(2, halvingsSince);
 }
 
 // Calcul date prochain halving
-function getNextHalving() {
-    const lastHalving = new Date("2024-04-01");
-    const nextHalving = new Date(lastHalving);
-    nextHalving.setFullYear(lastHalving.getFullYear() + 4);
+function getNextHalving(currentDate) {
+    const firstHalving = new Date("2012-11-28");
+    let halvingsSince = Math.floor((currentDate - firstHalving)/(1000*60*60*24*365*4));
+    let nextHalving = new Date(firstHalving);
+    nextHalving.setFullYear(firstHalving.getFullYear() + 4*(halvingsSince+1));
     return nextHalving.toLocaleDateString();
+}
+
+// Facteur division actuel depuis le premier halving
+function getHalvingFactor(currentDate) {
+    const firstHalving = new Date("2012-11-28");
+    let halvingsSince = Math.floor((currentDate - firstHalving)/(1000*60*60*24*365*4));
+    return Math.pow(2, halvingsSince);
 }
 
 // Croissance aléatoire du hashrate entre 3 et 5 % par mois
@@ -128,8 +134,10 @@ async function simulate() {
   document.getElementById("gmtPrice").innerText = `$${gmtUSD.toLocaleString()} / €${data["gmt-token"].eur.toLocaleString()}`;
   const baseHashrate = 500000; // TH/s initial
   document.getElementById("networkHashrate").innerText = baseHashrate.toLocaleString();
-  document.getElementById("rewardPerTHDisplay").innerText = getRewardPerTH(new Date()).toFixed(2);
-  document.getElementById("nextHalving").innerText = getNextHalving();
+  const today = new Date();
+  document.getElementById("rewardPerTHDisplay").innerText = getRewardPerTH(today).toFixed(2);
+  document.getElementById("nextHalving").innerText = getNextHalving(today);
+  document.getElementById("halvingFactor").innerText = getHalvingFactor(today);
 
   let totalDays = 1;
   if (unit == "1") totalDays = timeValue;
