@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Simulateur GoMining Friendly</title>
+<title>Simulateur GoMining avec Halving</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f3f5; color: #333; padding: 20px; }
@@ -22,7 +22,7 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
 </head>
 <body>
 <div class="container">
-<h1>Simulateur GoMining Friendly</h1>
+<h1>Simulateur GoMining avec Halving</h1>
 
 <div class="card">
   <label>TH actuel : <input type="number" id="th" value="28"></label>
@@ -70,13 +70,13 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
 <script>
 let chartInstance = null;
 
-// Fonction pour calculer le reward par TH selon la date et les halvings
+// Calcul du reward par TH selon la date et les halvings
 function getRewardPerTH(currentDate) {
-    const lastHalving = new Date("2024-04-01"); // dernier halving
+    const lastHalving = new Date("2024-04-01");
     const initialReward = 49; // satoshi/TH/jour avant halving
     const yearDiff = currentDate.getFullYear() - lastHalving.getFullYear();
     const monthDiff = currentDate.getMonth() - lastHalving.getMonth();
-    const totalYears = yearDiff + monthDiff/12;
+    const totalYears = yearDiff + monthDiff / 12;
     const halvingsSince = Math.floor(totalYears / 4);
     return initialReward / Math.pow(2, halvingsSince);
 }
@@ -107,8 +107,14 @@ async function simulate() {
   let labels = [], gainHistory = [];
   let cumulativeRewardSat = 0;
 
+  const startDate = new Date(); // date de départ
+
   for (let day = 1; day <= totalDays; day++) {
-    const currentDate = new Date();
+    // Date correspondante au jour simulé
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() + day - 1);
+
+    // Reward ajusté pour le halving
     const rewardPerTH = getRewardPerTH(currentDate);
 
     const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
