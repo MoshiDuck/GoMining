@@ -2,12 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Simulateur GoMining avec Halving</title>
+<title>Simulateur GoMining avec Halving et Frais</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f3f5; color: #333; padding: 20px; }
 h1 { color: #2c3e50; text-align: center; }
-.container { max-width: 900px; margin: auto; }
+.container { max-width: 1000px; margin: auto; }
 .card { background: white; padding: 15px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
 label { display: block; margin-top: 10px; font-weight: bold; }
 input, select { padding: 5px; margin-top: 5px; width: 120px; }
@@ -22,7 +22,7 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
 </head>
 <body>
 <div class="container">
-<h1>Simulateur GoMining avec Halving</h1>
+<h1>Simulateur GoMining avec Halving et Frais</h1>
 
 <div class="card">
   <label>TH actuel : <input type="number" id="th" value="28"></label>
@@ -43,7 +43,7 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
   </label>
   <label>Nombre : <input type="number" id="timeValue" value="5"></label>
   <button onclick="simulate()">Simuler</button>
-  <div class="info">💡 Gomining = gains cumulés, Réinvestissement = gains du jour seulement. Halving BTC pris en compte.</div>
+  <div class="info">💡 Gomining = gains cumulés, Réinvestissement = gains du jour seulement. Halving BTC pris en compte. Frais affichés séparément.</div>
 </div>
 
 <div class="card table-container">
@@ -53,9 +53,10 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
       <tr>
         <th>Jour</th>
         <th>Puissance TH</th>
-        <th>Gain GMT</th>
-        <th>Gain USD</th>
-        <th>Gain sat</th>
+        <th>Reward brut (sat)</th>
+        <th>Frais électricité (sat)</th>
+        <th>Frais service (sat)</th>
+        <th>Gain net (sat)</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -117,9 +118,12 @@ async function simulate() {
     // Reward ajusté pour le halving
     const rewardPerTH = getRewardPerTH(currentDate);
 
+    const rewardBrut = rewardPerTH*th;
     const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
     const serviceFee = (0.0089/gmtUSD)*(1-remise/100);
-    const rewardNet = rewardPerTH*th - (electricityFee*th + serviceFee*th);
+    const totalElectricityFee = electricityFee*th;
+    const totalServiceFee = serviceFee*th;
+    const rewardNet = rewardBrut - (totalElectricityFee + totalServiceFee);
 
     let displayReward = rewardNet;
     if(strategy=="gomining") cumulativeRewardSat += rewardNet; else cumulativeRewardSat = rewardNet;
@@ -132,14 +136,13 @@ async function simulate() {
     }
 
     if ((unit=="2" && day%30==0) || (unit=="3" && day%365==0) || unit=="1") {
-      const rewardUSD = (displayReward/1e8)*btcUSD;
-      const rewardGMT = rewardUSD/gmtUSD;
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${day}</td>
         <td>${th.toFixed(6)}</td>
-        <td>${(strategy=="gomining"?cumulativeRewardSat/1e8*btcUSD/gmtUSD:rewardGMT).toFixed(6)}</td>
-        <td>${(strategy=="gomining"?cumulativeRewardSat/1e8*btcUSD:rewardUSD).toFixed(6)}</td>
+        <td>${rewardBrut.toFixed(2)}</td>
+        <td>${totalElectricityFee.toFixed(4)}</td>
+        <td>${totalServiceFee.toFixed(4)}</td>
         <td>${(strategy=="gomining"?cumulativeRewardSat:rewardNet).toFixed(2)}</td>
       `;
       tbody.appendChild(row);
@@ -157,12 +160,12 @@ async function simulate() {
     type: "line",
     data: {
       labels: labels,
-      datasets: [{ label: "Gain sat/jour", data: gainHistory, borderColor: "green", fill: false, tension: 0.3 }]
+      datasets: [{ label: "Gain net sat/jour", data: gainHistory, borderColor: "green", fill: false, tension: 0.3 }]
     },
     options: {
       responsive:true,
       plugins:{legend:{position:'top'}, tooltip:{mode:'index',intersect:false}},
-      scales:{y:{beginAtZero:false, min:gainMin*0.999, max:gainMax*1.001, title:{display:true,text:'Gain sat/jour'}}}
+      scales:{y:{beginAtZero:false, min:gainMin*0.999, max:gainMax*1.001, title:{display:true,text:'Gain net sat/jour'}}}
     }
   });
 }
