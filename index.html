@@ -419,7 +419,7 @@
                         getBtcHashrate()
                     ]);
                     
-                    if (!btcPrice || !gmtPrice || !difficulty || !networkHashrate) {
+                    if (btcPrice === null || gmtPrice === null || difficulty === null || networkHashrate === null) {
                         throw new Error("Impossible de récupérer toutes les données nécessaires");
                     }
                     
@@ -455,7 +455,15 @@
             
             async function getBtcPrice() {
                 try {
-                    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+                    // Utilisation d'un proxy CORS pour éviter les problèmes
+                    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    const targetUrl = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd';
+                    const response = await fetch(proxyUrl + targetUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
                     return data.bitcoin.usd;
                 } catch (error) {
@@ -466,7 +474,15 @@
             
             async function getGominingPrice() {
                 try {
-                    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=gmt-token&vs_currencies=usd');
+                    // Utilisation d'un proxy CORS pour éviter les problèmes
+                    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    const targetUrl = 'https://api.coingecko.com/api/v3/simple/price?ids=gmt-token&vs_currencies=usd';
+                    const response = await fetch(proxyUrl + targetUrl, { timeout: 10000 });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
                     return parseFloat(data['gmt-token'].usd);
                 } catch (error) {
@@ -478,6 +494,11 @@
             async function getBtcDifficulty() {
                 try {
                     const response = await fetch('https://blockchain.info/q/getdifficulty');
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    
                     const text = await response.text();
                     return parseFloat(text);
                 } catch (error) {
@@ -488,7 +509,15 @@
             
             async function getBtcHashrate() {
                 try {
-                    const response = await fetch('https://api.blockchain.info/charts/hash-rate?format=json&timespan=30days');
+                    // Utilisation d'un proxy CORS pour éviter les problèmes
+                    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    const targetUrl = 'https://api.blockchain.info/charts/hash-rate?format=json&timespan=30days';
+                    const response = await fetch(proxyUrl + targetUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
                     const values = data.values;
                     if (!values || values.length === 0) {
