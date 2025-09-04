@@ -3,763 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculateur Rentabilité Minière</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Suivi Crypto - BTC & GMT</title>
     <style>
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
             --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #34495e;
-            --success-color: #2ecc71;
+            --background-color: #f5f7fa;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --success-color: #27ae60;
             --warning-color: #f39c12;
-            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --error-color: #e74c3c;
         }
-        
+
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-            color: var(--dark-color);
+            background-color: var(--background-color);
+            color: var(--text-color);
             line-height: 1.6;
-            min-height: 100vh;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
         }
-        
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-        }
-        
+
         header {
-            background: var(--secondary-color);
-            color: white;
             text-align: center;
-            padding: 30px 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         h1 {
-            font-size: 2.2rem;
             margin-bottom: 10px;
         }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
+
+        .last-updated {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
-        
-        .logo {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .card {
-            padding: 25px;
-        }
-        
-        .card-title {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .form-grid {
+
+        .dashboard {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .input-with-icon {
-            position: relative;
-        }
-        
-        .input-with-icon i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary-color);
-        }
-        
-        input[type="number"] {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-        
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-        
-        button {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        button:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        button:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .loader {
-            display: none;
-            text-align: center;
-            margin: 30px 0;
-        }
-        
-        .loader-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            display: none;
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .warning {
-            display: none;
-            background: #fff8e1;
-            color: #f57c00;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .success {
-            display: none;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .results {
-            display: none;
-            margin-top: 30px;
-        }
-        
-        .result-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
             margin-bottom: 30px;
         }
-        
-        .result-item {
+
+        .card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
             display: flex;
             justify-content: space-between;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary-color);
-        }
-        
-        .result-label {
-            font-weight: 600;
-            display: flex;
             align-items: center;
-            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
         }
-        
-        .result-value {
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
             font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .card-change {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .positive {
+            background-color: rgba(39, 174, 96, 0.2);
             color: var(--success-color);
         }
-        
-        .market-data {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 30px;
+
+        .negative {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--error-color);
         }
-        
-        .market-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .market-name {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-        }
-        
-        .market-value {
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .info-box {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-size: 0.9rem;
-            border-left: 4px solid var(--primary-color);
-        }
-        
-        .api-status {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+
+        .card-footer {
+            margin-top: 15px;
             font-size: 0.8rem;
-            margin-top: 5px;
-            color: #7f8c8d;
+            color: #777;
         }
-        
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
         }
-        
-        .status-live {
-            background-color: var(--success-color);
+
+        .error-message {
+            color: var(--error-color);
+            font-weight: 600;
+            margin-top: 10px;
         }
-        
-        .status-fallback {
-            background-color: var(--warning-color);
+
+        .refresh-btn {
+            display: block;
+            margin: 0 auto;
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
         }
-        
-        @media (min-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .market-data {
-                grid-template-columns: repeat(2, 1fr);
-            }
+
+        .refresh-btn:hover {
+            background-color: #2980b9;
         }
-        
-        .footer {
+
+        footer {
             text-align: center;
             margin-top: 30px;
             padding: 20px;
-            color: white;
+            color: #777;
             font-size: 0.9rem;
-            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <i class="fas fa-bitcoin"></i>
-            </div>
-            <h1>Calculateur de Rentabilité Minière</h1>
-            <p class="subtitle">Estimez votre rentabilité minière en temps réel</p>
-        </header>
-        
-        <div class="card">
-            <h2 class="card-title"><i class="fas fa-calculator"></i> Paramètres de calcul</h2>
-            
-            <div class="info-box">
-                <i class="fas fa-info-circle"></i> Les calculs utilisent les tarifs standards de l'industrie et des données de marché en temps réel.
-            </div>
-            
-            <form id="calculator-form">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="th">Puissance de minage (TH/s)</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <input type="number" id="th" step="0.01" required placeholder="Ex: 1000" value="1000" min="1">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="wth">Efficacité énergétique (W/TH)</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-bolt"></i>
-                            <input type="number" id="wth" step="0.1" required placeholder="Ex: 30" value="30" min="0.1">
-                        </div>
-                    </div>
+    <header>
+        <h1>Suivi des Cryptomonnaies</h1>
+        <p class="last-updated">Dernière mise à jour: <span id="last-update-time">-</span></p>
+    </header>
+
+    <main>
+        <div class="dashboard">
+            <div class="card" id="btc-price-card">
+                <div class="card-header">
+                    <div class="card-title">Prix Bitcoin (BTC)</div>
+                    <div class="card-icon">₿</div>
                 </div>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="discount">Remise totale (%)</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-percent"></i>
-                            <input type="number" id="discount" step="0.1" required placeholder="Ex: 5.0" value="5.0" min="0" max="100">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="electricity-rate">Coût électrique (USD/kWh)</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-bolt"></i>
-                            <input type="number" id="electricity-rate" step="0.001" required placeholder="Ex: 0.05" value="0.05" min="0.001">
-                        </div>
-                    </div>
+                <div class="card-value" id="btc-price">Chargement...</div>
+                <div class="card-change" id="btc-change">24h: -</div>
+                <div class="card-footer">
+                    Données fournies par CoinGecko
                 </div>
-                
-                <button type="submit" id="calculate-btn">
-                    <i class="fas fa-calculator"></i> Calculer la rentabilité
-                </button>
-            </form>
-            
-            <div class="loader" id="loader">
-                <div class="loader-spinner"></div>
-                <p>Récupération des données de marché...</p>
             </div>
-            
-            <div class="error" id="error-message">
-                <i class="fas fa-exclamation-circle"></i> <span id="error-text">Une erreur s'est produite lors du calcul.</span>
-            </div>
-            
-            <div class="warning" id="warning-message">
-                <i class="fas fa-exclamation-triangle"></i> <span id="warning-text">Utilisation de données de secours pour le calcul.</span>
-            </div>
-            
-            <div class="success" id="success-message">
-                <i class="fas fa-check-circle"></i> Calcul terminé avec succès!
-            </div>
-            
-            <div class="results" id="results">
-                <h2 class="card-title"><i class="fas fa-chart-line"></i> Résultats du calcul</h2>
-                
-                <div class="result-grid">
-                    <div class="result-item">
-                        <span class="result-label"><i class="fas fa-coins"></i> Récompense quotidienne:</span>
-                        <span class="result-value" id="reward">-</span>
-                    </div>
-                    
-                    <div class="result-item">
-                        <span class="result-label"><i class="fas fa-bolt"></i> Consommation électrique:</span>
-                        <span class="result-value" id="power-consumption">-</span>
-                    </div>
-                    
-                    <div class="result-item">
-                        <span class="result-label"><i class="fas fa-money-bill-wave"></i> Frais d'électricité:</span>
-                        <span class="result-value" id="electricity-fee">-</span>
-                    </div>
-                    
-                    <div class="result-item">
-                        <span class="result-label"><i class="fas fa-tools"></i> Coût du service:</span>
-                        <span class="result-value" id="service-fee">-</span>
-                    </div>
-                    
-                    <div class="result-item">
-                        <span class="result-label"><i class="fas fa-hand-holding-usd"></i> Profit quotidien:</span>
-                        <span class="result-value" id="profit">-</span>
-                    </div>
+
+            <div class="card" id="btc-hashrate-card">
+                <div class="card-header">
+                    <div class="card-title">Hashrate Bitcoin</div>
+                    <div class="card-icon">⛏️</div>
                 </div>
-                
-                <h2 class="card-title"><i class="fas fa-globe"></i> Données de marché</h2>
-                
-                <div class="market-data">
-                    <div class="market-item">
-                        <div class="market-name"><i class="fab fa-bitcoin"></i> Prix BTC
-                            <span class="api-status" id="btc-price-status">
-                                <span class="status-indicator"></span>
-                                <span class="status-text">Source</span>
-                            </span>
-                        </div>
-                        <div class="market-value" id="btc-price">-</div>
-                    </div>
-                    
-                    <div class="market-item">
-                        <div class="market-name"><i class="fas fa-rocket"></i> Prix GMT
-                            <span class="api-status" id="gmt-price-status">
-                                <span class="status-indicator"></span>
-                                <span class="status-text">Source</span>
-                            </span>
-                        </div>
-                        <div class="market-value" id="gmt-price">-</div>
-                    </div>
-                    
-                    <div class="market-item">
-                        <div class="market-name"><i class="fas fa-mountain"></i> Difficulté réseau
-                            <span class="api-status" id="difficulty-status">
-                                <span class="status-indicator"></span>
-                                <span class="status-text">Source</span>
-                            </span>
-                        </div>
-                        <div class="market-value" id="difficulty">-</div>
-                    </div>
-                    
-                    <div class="market-item">
-                        <div class="market-name"><i class="fas fa-tachometer-alt"></i> Hashrate réseau
-                            <span class="api-status" id="network-hashrate-status">
-                                <span class="status-indicator"></span>
-                                <span class="status-text">Source</span>
-                            </span>
-                        </div>
-                        <div class="market-value" id="network-hashrate">-</div>
-                    </div>
+                <div class="card-value" id="btc-hashrate">Chargement...</div>
+                <div class="card-footer">
+                    Données fournies par CoinGecko
+                </div>
+            </div>
+
+            <div class="card" id="gmt-price-card">
+                <div class="card-header">
+                    <div class="card-title">Prix GMT Token</div>
+                    <div class="card-icon">🪙</div>
+                </div>
+                <div class="card-value" id="gmt-price">Chargement...</div>
+                <div class="card-change" id="gmt-change">24h: -</div>
+                <div class="card-footer">
+                    Données fournies par CoinGecko
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="footer">
-        <p>Calculateur de rentabilité minière &copy; 2023</p>
-        <p>Les données de marché sont fournies par plusieurs sources fiables</p>
-    </div>
+
+        <button class="refresh-btn" id="refresh-btn">Actualiser les données</button>
+    </main>
+
+    <footer>
+        <p>Les données sont actualisées automatiquement toutes les 5 minutes</p>
+        <p>⚠️ Ce site est à but informatif uniquement. Les investissements en cryptomonnaies sont risqués.</p>
+    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Valeurs par défaut
-            const DEFAULT_BTC_PRICE = 50000.00;
-            const DEFAULT_GMT_PRICE = 0.5157;
-            const DEFAULT_DIFFICULTY = 129699156960681;
-            const DEFAULT_NETWORK_HASHRATE = 200000000; // TH/s
-            const DEFAULT_SERVICE_FEE = 0.0089; // USD/TH/jour
-            
-            // Éléments DOM
-            const form = document.getElementById('calculator-form');
-            const calculateBtn = document.getElementById('calculate-btn');
-            const loader = document.getElementById('loader');
-            const errorMessage = document.getElementById('error-message');
-            const warningMessage = document.getElementById('warning-message');
-            const successMessage = document.getElementById('success-message');
-            const results = document.getElementById('results');
-            
-            // Gestion de la soumission du formulaire
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                // Désactiver le bouton pendant le calcul
-                calculateBtn.disabled = true;
-                
-                // Afficher le loader et cacher les messages
-                loader.style.display = 'block';
-                errorMessage.style.display = 'none';
-                warningMessage.style.display = 'none';
-                successMessage.style.display = 'none';
-                results.style.display = 'none';
-                
-                const th = parseFloat(document.getElementById('th').value);
-                const wth = parseFloat(document.getElementById('wth').value);
-                const totalDiscount = parseFloat(document.getElementById('discount').value);
-                const electricityRate = parseFloat(document.getElementById('electricity-rate').value);
-                
-                try {
-                    // Récupérer les données de marché avec plusieurs sources de secours
-                    const [btcPrice, gmtPrice, difficulty, networkHashrate] = await Promise.all([
-                        getBtcPrice().catch(() => getBtcPriceFallback()),
-                        getGominingPrice().catch(() => getGominingPriceFallback()),
-                        getBtcDifficulty().catch(() => getBtcDifficultyFallback()),
-                        getBtcHashrate().catch(() => getBtcHashrateFallback())
-                    ]);
-                    
-                    // Vérifier si nous utilisons des données de secours
-                    let usingFallbackData = false;
-                    
-                    // Mettre à jour les indicateurs de source
-                    updateApiStatus('btc-price', btcPrice.source, btcPrice.value);
-                    updateApiStatus('gmt-price', gmtPrice.source, gmtPrice.value);
-                    updateApiStatus('difficulty', difficulty.source, difficulty.value);
-                    updateApiStatus('network-hashrate', networkHashrate.source, networkHashrate.value);
-                    
-                    if (btcPrice.source === 'fallback' || gmtPrice.source === 'fallback' || 
-                        difficulty.source === 'fallback' || networkHashrate.source === 'fallback') {
-                        usingFallbackData = true;
-                    }
-                    
-                    // Calculer les récompenses et frais
-                    const calculations = calculateFeesAndRewards(
-                        th, 
-                        wth, 
-                        totalDiscount, 
-                        electricityRate,
-                        btcPrice.value, 
-                        gmtPrice.value,
-                        difficulty.value,
-                        networkHashrate.value
-                    );
-                    
-                    // Afficher les résultats
-                    document.getElementById('reward').textContent = `${calculations.reward.toFixed(2)} sat/jour`;
-                    document.getElementById('power-consumption').textContent = `${calculations.powerConsumption.toFixed(2)} kWh/jour`;
-                    document.getElementById('electricity-fee').textContent = `${calculations.electricityFee.toFixed(2)} GMT/jour`;
-                    document.getElementById('service-fee').textContent = `${calculations.serviceFee.toFixed(2)} GMT/jour`;
-                    document.getElementById('profit').textContent = `${calculations.profit.toFixed(2)} GMT/jour`;
-                    document.getElementById('btc-price').textContent = `$${btcPrice.value.toFixed(2)}`;
-                    document.getElementById('gmt-price').textContent = `$${gmtPrice.value.toFixed(4)}`;
-                    document.getElementById('difficulty').textContent = difficulty.value.toLocaleString();
-                    document.getElementById('network-hashrate').textContent = `${(networkHashrate.value / 1000000).toFixed(2)} EH/s`;
-                    
-                    // Afficher les résultats et cacher le loader
-                    loader.style.display = 'none';
-                    
-                    if (usingFallbackData) {
-                        document.getElementById('warning-text').textContent = 
-                            "Certaines données de marché ne sont pas disponibles. Calcul effectué avec des données de secours.";
-                        warningMessage.style.display = 'block';
-                    } else {
-                        successMessage.style.display = 'block';
-                    }
-                    
-                    results.style.display = 'block';
-                    
-                    // Réactiver le bouton
-                    calculateBtn.disabled = false;
-                    
-                    // Faire défiler jusqu'aux résultats
-                    results.scrollIntoView({ behavior: 'smooth' });
-                    
-                } catch (error) {
-                    console.error("Erreur:", error);
-                    loader.style.display = 'none';
-                    document.getElementById('error-text').textContent = 
-                        `Une erreur s'est produite lors du calcul: ${error.message}`;
-                    errorMessage.style.display = 'block';
-                    calculateBtn.disabled = false;
+        // Configuration
+        const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
+        const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes en millisecondes
+        const RETRY_DELAY = 30000; // 30 secondes en cas d'erreur
+
+        // Éléments DOM
+        const btcPriceElement = document.getElementById('btc-price');
+        const btcChangeElement = document.getElementById('btc-change');
+        const btcHashrateElement = document.getElementById('btc-hashrate');
+        const gmtPriceElement = document.getElementById('gmt-price');
+        const gmtChangeElement = document.getElementById('gmt-change');
+        const lastUpdateTimeElement = document.getElementById('last-update-time');
+        const refreshButton = document.getElementById('refresh-btn');
+        const cards = document.querySelectorAll('.card');
+
+        // Variables d'état
+        let updateIntervalId = null;
+        let lastSuccessfulUpdate = null;
+
+        // Formateurs
+        const formatCurrency = (value, currency = 'USD') => {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: value < 1 ? 4 : 2,
+                maximumFractionDigits: value < 1 ? 6 : 2
+            }).format(value);
+        };
+
+        const formatHashrate = (hashrate) => {
+            if (hashrate >= 1e18) {
+                return (hashrate / 1e18).toFixed(2) + ' EH/s';
+            } else if (hashrate >= 1e15) {
+                return (hashrate / 1e15).toFixed(2) + ' PH/s';
+            } else {
+                return (hashrate / 1e12).toFixed(2) + ' TH/s';
+            }
+        };
+
+        const formatPercentage = (value) => {
+            return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+        };
+
+        const formatTimestamp = (timestamp) => {
+            return new Date(timestamp).toLocaleTimeString('fr-FR');
+        };
+
+        // Fonctions d'état UI
+        const setLoadingState = (isLoading) => {
+            cards.forEach(card => {
+                if (isLoading) {
+                    card.classList.add('loading');
+                } else {
+                    card.classList.remove('loading');
                 }
             });
             
-            function updateApiStatus(elementId, source, value) {
-                const statusElement = document.getElementById(`${elementId}-status`);
-                const indicator = statusElement.querySelector('.status-indicator');
-                const text = statusElement.querySelector('.status-text');
+            refreshButton.disabled = isLoading;
+            refreshButton.textContent = isLoading ? 'Actualisation...' : 'Actualiser les données';
+        };
+
+        const showError = (element, message) => {
+            element.innerHTML = `<span class="error-message">${message}</span>`;
+        };
+
+        // Fonctions API
+        const fetchWithErrorHandling = async (url, options = {}) => {
+            try {
+                const response = await fetch(url, options);
                 
-                if (source === 'live') {
-                    indicator.classList.add('status-live');
-                    text.textContent = 'Live';
-                } else {
-                    indicator.classList.add('status-fallback');
-                    text.textContent = 'Donnée fixe';
-                }
-            }
-            
-            async function getBtcPrice() {
-                // Essayer plusieurs APIs différentes pour le prix BTC
-                const apis = [
-                    'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
-                    'https://api.coincap.io/v2/assets/bitcoin',
-                    'https://blockchain.info/ticker'
-                ];
-                
-                for (let i = 0; i < apis.length; i++) {
-                    try {
-                        const response = await fetchWithTimeout(apis[i], {}, 5000);
-                        
-                        if (!response.ok) {
-                            throw new Error(`Erreur HTTP: ${response.status}`);
-                        }
-                        
-                        const data = await response.json();
-                        
-                        if (apis[i].includes('coingecko')) {
-                            return { value: data.bitcoin.usd, source: 'live' };
-                        } else if (apis[i].includes('coincap')) {
-                            return { value: parseFloat(data.data.priceUsd), source: 'live' };
-                        } else if (apis[i].includes('blockchain.info')) {
-                            return { value: data.USD.last, source: 'live' };
-                        }
-                    } catch (error) {
-                        console.warn(`API ${apis[i]} a échoué:`, error);
-                        // Continuer à essayer l'API suivante
-                    }
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
                 }
                 
-                // Si toutes les APIs échouent, utiliser la valeur par défaut
-                return { value: DEFAULT_BTC_PRICE, source: 'fallback' };
+                return await response.json();
+            } catch (error) {
+                console.error('Erreur de récupération:', error);
+                throw new Error(`Échec de la récupération des données: ${error.message}`);
             }
-            
-            async function getGominingPrice() {
-                try {
-                    const response = await fetchWithTimeout(
-                        'https://api.coingecko.com/api/v3/simple/price?ids=gmt-token&vs_currencies=usd',
-                        {}, 
-                        5000
-                    );
-                    
-                    if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    return { value: data['gmt-token'].usd, source: 'live' };
-                } catch (error) {
-                    console.warn("Récupération du prix GMT échouée:", error);
-                    return { value: DEFAULT_GMT_PRICE, source: 'fallback' };
+        };
+
+        const fetchBitcoinData = async () => {
+            try {
+                // Récupération du prix et des infos de marché
+                const marketData = await fetchWithErrorHandling(
+                    `${COINGECKO_API_BASE}/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=true&sparkline=false`
+                );
+                
+                // Récupération du hashrate depuis les données de développement
+                const hashrate = marketData.developer_data?.current_hashrate;
+                if (hashrate === undefined || hashrate === null) {
+                    throw new Error('Hashrate non disponible');
                 }
-            }
-            
-            async function getBtcDifficulty() {
-                try {
-                    const response = await fetchWithTimeout(
-                        'https://blockchain.info/q/getdifficulty',
-                        {}, 
-                        5000
-                    );
-                    
-                    if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`);
-                    }
-                    
-                    const text = await response.text();
-                    return { value: parseFloat(text), source: 'live' };
-                } catch (error) {
-                    console.warn("Récupération de la difficulté échouée:", error);
-                    return { value: DEFAULT_DIFFICULTY, source: 'fallback' };
-                }
-            }
-            
-            async function getBtcHashrate() {
-                try {
-                    const response = await fetchWithTimeout(
-                        'https://blockchain.info/q/hashrate',
-                        {}, 
-                        5000
-                    );
-                    
-                    if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`);
-                    }
-                    
-                    const text = await response.text();
-                    // Conversion de EH/s en TH/s (1 EH/s = 1,000,000 TH/s)
-                    return { value: parseFloat(text) * 1000000, source: 'live' };
-                } catch (error) {
-                    console.warn("Récupération du hashrate échouée:", error);
-                    return { value: DEFAULT_NETWORK_HASHRATE, source: 'fallback' };
-                }
-            }
-            
-            function fetchWithTimeout(url, options = {}, timeout = 5000) {
-                return Promise.race([
-                    fetch(url, options),
-                    new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error('Timeout')), timeout)
-                    )
-                ]);
-            }
-            
-            function calculateFeesAndRewards(th, wth, totalDiscount, electricityRate, btcPrice, gmtPrice, difficulty, networkHashrate) {
-                // Calcul de la récompense quotidienne basée sur la part de hashrate
-                const blocksPerDay = 144; // Nombre de blocs Bitcoin minés par jour
-                const blockReward = 6.25; // Récompense par bloc en BTC (en 2023)
-                const dailyBtcReward = (th / networkHashrate) * blocksPerDay * blockReward;
-                const reward = dailyBtcReward * 100000000; // Conversion en satoshis
-                
-                // Calcul de la consommation électrique
-                const powerConsumption = (th * wth * 24) / 1000; // kWh/jour
-                
-                // Frais d'électricité en USD puis conversion en GMT
-                const electricityCostUSD = powerConsumption * electricityRate;
-                const electricityFee = electricityCostUSD / gmtPrice;
-                
-                // Frais de service en USD puis conversion en GMT (avec remise appliquée)
-                const serviceCostUSD = DEFAULT_SERVICE_FEE * th * (1 - totalDiscount / 100);
-                const serviceFee = serviceCostUSD / gmtPrice;
-                
-                // Récompense quotidienne en GMT
-                const rewardInGmt = dailyBtcReward * btcPrice / gmtPrice;
-                
-                // Profit quotidien (récompense convertie en GMT moins les frais)
-                const profit = rewardInGmt - electricityFee - serviceFee;
                 
                 return {
-                    reward,
-                    powerConsumption,
-                    electricityFee,
-                    serviceFee,
-                    profit
+                    price: marketData.market_data.current_price.usd,
+                    priceChange24h: marketData.market_data.price_change_percentage_24h,
+                    hashrate: hashrate
                 };
+            } catch (error) {
+                console.error('Erreur dans fetchBitcoinData:', error);
+                throw new Error(`Impossible de récupérer les données Bitcoin: ${error.message}`);
+            }
+        };
+
+        const fetchGMTData = async () => {
+            try {
+                // Récupération du prix de GMT (Stepn)
+                const marketData = await fetchWithErrorHandling(
+                    `${COINGECKO_API_BASE}/coins/stepn?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
+                );
+                
+                return {
+                    price: marketData.market_data.current_price.usd,
+                    priceChange24h: marketData.market_data.price_change_percentage_24h
+                };
+            } catch (error) {
+                console.error('Erreur dans fetchGMTData:', error);
+                throw new Error(`Impossible de récupérer les données GMT: ${error.message}`);
+            }
+        };
+
+        // Mise à jour de l'interface
+        const updateUI = (btcData, gmtData) => {
+            // Mise à jour des données Bitcoin
+            if (btcData) {
+                btcPriceElement.textContent = formatCurrency(btcData.price, 'USD');
+                btcChangeElement.textContent = `24h: ${formatPercentage(btcData.priceChange24h)}`;
+                btcChangeElement.className = `card-change ${btcData.priceChange24h >= 0 ? 'positive' : 'negative'}`;
+                btcHashrateElement.textContent = formatHashrate(btcData.hashrate);
             }
             
-            // Fonctions de secours au cas où les APIs principales échouent
-            async function getBtcPriceFallback() {
-                return { value: DEFAULT_BTC_PRICE, source: 'fallback' };
+            // Mise à jour des données GMT
+            if (gmtData) {
+                gmtPriceElement.textContent = formatCurrency(gmtData.price, 'USD');
+                gmtChangeElement.textContent = `24h: ${formatPercentage(gmtData.priceChange24h)}`;
+                gmtChangeElement.className = `card-change ${gmtData.priceChange24h >= 0 ? 'positive' : 'negative'}`;
             }
             
-            async function getGominingPriceFallback() {
-                return { value: DEFAULT_GMT_PRICE, source: 'fallback' };
+            // Mise à jour de l'horodatage
+            lastSuccessfulUpdate = Date.now();
+            lastUpdateTimeElement.textContent = formatTimestamp(lastSuccessfulUpdate);
+        };
+
+        // Fonction principale de mise à jour
+        const updateAllData = async (isManualRefresh = false) => {
+            if (isManualRefresh) {
+                setLoadingState(true);
             }
             
-            async function getBtcDifficultyFallback() {
-                return { value: DEFAULT_DIFFICULTY, source: 'fallback' };
+            try {
+                // Récupération en parallèle des données
+                const [btcData, gmtData] = await Promise.all([
+                    fetchBitcoinData(),
+                    fetchGMTData()
+                ]);
+                
+                updateUI(btcData, gmtData);
+                
+                // Réactivation des intervalles en cas de succès après une erreur
+                if (updateIntervalId === null) {
+                    startAutoUpdate();
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour des données:', error);
+                
+                // Affichage des erreurs spécifiques
+                if (error.message.includes('Bitcoin')) {
+                    showError(btcPriceElement, 'Erreur données BTC');
+                    showError(btcHashrateElement, 'Données indisponibles');
+                }
+                
+                if (error.message.includes('GMT')) {
+                    showError(gmtPriceElement, 'Erreur données GMT');
+                }
+                
+                // Arrêt de l'auto-actualisation en cas d'erreur
+                if (updateIntervalId !== null) {
+                    clearInterval(updateIntervalId);
+                    updateIntervalId = null;
+                }
+                
+                // Nouvelle tentative après un délai
+                setTimeout(updateAllData, RETRY_DELAY);
+            } finally {
+                if (isManualRefresh) {
+                    setLoadingState(false);
+                }
+            }
+        };
+
+        // Gestion de l'auto-actualisation
+        const startAutoUpdate = () => {
+            if (updateIntervalId !== null) {
+                clearInterval(updateIntervalId);
             }
             
-            async function getBtcHashrateFallback() {
-                return { value: DEFAULT_NETWORK_HASHRATE, source: 'fallback' };
-            }
-        });
+            updateIntervalId = setInterval(() => {
+                updateAllData(false);
+            }, UPDATE_INTERVAL);
+        };
+
+        // Initialisation
+        const init = () => {
+            // Premier chargement des données
+            updateAllData(true);
+            
+            // Configuration du bouton de rafraîchissement
+            refreshButton.addEventListener('click', () => {
+                updateAllData(true);
+            });
+            
+            // Vérification périodique de la fraîcheur des données
+            setInterval(() => {
+                if (lastSuccessfulUpdate && (Date.now() - lastSuccessfulUpdate) > UPDATE_INTERVAL * 1.5) {
+                    lastUpdateTimeElement.innerHTML = `<span class="error-message">Données possibly obsolètes</span>`;
+                }
+            }, 60000); // Vérifie toutes les minutes
+        };
+
+        // Démarrage de l'application
+        init();
     </script>
 </body>
 </html>
