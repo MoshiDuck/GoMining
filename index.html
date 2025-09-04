@@ -43,10 +43,11 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
   </label>
   <label>Nombre : <input type="number" id="timeValue" value="5"></label>
   <button onclick="simulate()">Simuler</button>
-  <div class="info">💡 En Gomining les récompenses sont cumulées, en Réinvestissement elles ne le sont pas.</div>
+  <div class="info">💡 Gomining = gains cumulés, Réinvestissement = gains du jour seulement.</div>
 </div>
 
 <div class="card table-container">
+  <h3>Tableau des résultats</h3>
   <table id="resultTable">
     <thead>
       <tr>
@@ -58,6 +59,22 @@ canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px;
         <th>GMT</th>
         <th>USD</th>
         <th>Satoshi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="card table-container" id="gominingCard" style="display:none;">
+  <h3>Tableau Gomining Cumulatif</h3>
+  <table id="gominingTable">
+    <thead>
+      <tr>
+        <th>Jour</th>
+        <th>Puissance TH</th>
+        <th>Gain cumulé GMT</th>
+        <th>Gain cumulé USD</th>
+        <th>Gain cumulé sat</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -94,23 +111,22 @@ async function simulate() {
   let tbody = document.querySelector("#resultTable tbody");
   tbody.innerHTML = "";
 
-  let labels = [];
-  let thHistory = [];
-  let gainHistory = [];
+  let labels = [], thHistory = [], gainHistory = [];
+  let gominingTbody = document.querySelector("#gominingTable tbody");
+  gominingTbody.innerHTML = "";
+  document.getElementById("gominingCard").style.display = strategy=="gomining"?"block":"none";
 
   let cumulativeRewardSat = 0;
 
   for (let day = 1; day <= totalDays; day++) {
-    // Calcul reward net
     const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
     const serviceFee = (0.0089/gmtUSD)*(1-remise/100);
     const rewardPerTH = 49;
-    const rewardNet = rewardPerTH*th - (electricityFee*th + serviceFee*th); // satoshi
+    const rewardNet = rewardPerTH*th - (electricityFee*th + serviceFee*th);
 
     let displayReward = rewardNet;
     if(strategy=="gomining") cumulativeRewardSat += rewardNet; else cumulativeRewardSat = rewardNet;
 
-    // Réinvestissement quotidien
     if(strategy=="reinvest"){
       const rewardUSD = (rewardNet/1e8)*btcUSD;
       const reinvestUSD = rewardUSD*1.05;
@@ -118,11 +134,9 @@ async function simulate() {
       th += thBought;
     }
 
-    // Affichage par mois / année / jour
     if ((unit=="2" && day%30==0) || (unit=="3" && day%365==0) || unit=="1") {
       const rewardUSD = (displayReward/1e8)*btcUSD;
       const rewardGMT = rewardUSD/gmtUSD;
-
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${unit=="1"?day:unit=="2"?day/30:day/365}</td>
@@ -136,28 +150,47 @@ async function simulate() {
       `;
       tbody.appendChild(row);
 
+      if(strategy=="gomining"){
+        const cumRewardUSD = (cumulativeRewardSat/1e8)*btcUSD;
+        const cumRewardGMT = cumRewardUSD/gmtUSD;
+        const cumRow = document.createElement("tr");
+        cumRow.innerHTML = `
+          <td>${day}</td>
+          <td>${th.toFixed(6)}</td>
+          <td>${cumRewardGMT.toFixed(6)}</td>
+          <td>${cumRewardUSD.toFixed(6)}</td>
+          <td>${cumulativeRewardSat.toFixed(2)}</td>
+        `;
+        gominingTbody.appendChild(cumRow);
+      }
+
       labels.push(unit=="1"?day:unit=="2"?day/30:day/365);
       thHistory.push(th);
       gainHistory.push(displayReward);
     }
   }
 
-  // Mettre à jour ou créer le graphique
   if(chartInstance) chartInstance.destroy();
   const ctx = document.getElementById("chart").getContext("2d");
+  const gainMin = Math.min(...gainHistory), gainMax = Math.max(...gainHistory);
+  const thMin = Math.min(...thHistory), thMax = Math.max(...thHistory);
+
   chartInstance = new Chart(ctx, {
     type: "line",
     data: {
       labels: labels,
       datasets: [
-        { label: "TH actuel", data: thHistory, borderColor: "blue", fill: false, tension: 0.3 },
-        { label: strategy=="gomining"?"Gain cumulatif sat":"Gain actuel sat", data: gainHistory, borderColor: "green", fill: false, tension: 0.3 }
+        { label: "TH actuel", data: thHistory, borderColor: "blue", fill: false, tension:0.3, yAxisID:'y1' },
+        { label: strategy=="gomining"?"Gain cumulatif sat":"Gain actuel sat", data: gainHistory, borderColor: "green", fill: false, tension:0.3, yAxisID:'y2' }
       ]
     },
     options: {
-      responsive: true,
-      plugins: { legend: { position: "top" }, tooltip: { mode: 'index', intersect: false } },
-      scales: { y: { beginAtZero: true } }
+      responsive:true,
+      plugins:{legend:{position:'top'}, tooltip:{mode:'index',intersect:false}},
+      scales:{
+        y1:{type:'linear', position:'left', min:thMin*0.999, max:thMax*1.001, title:{display:true,text:'TH'}},
+        y2:{type:'linear', position:'right', min:gainMin*0.999, max:gainMax*1.001, title:{display:true,text:'Gain sat'}}
+      }
     }
   });
 }
