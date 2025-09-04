@@ -320,7 +320,6 @@
                         <div class="card-icon">₿</div>
                     </div>
                     <div class="card-value" id="btc-price">Chargement...</div>
-                    <div class="card-change" id="btc-change">24h: -</div>
                     <div class="card-footer">
                         <span>Données fournies par CoinGecko</span>
                         <span class="status-indicator status-live"></span>
@@ -334,7 +333,7 @@
                     </div>
                     <div class="card-value" id="btc-hashrate">Chargement...</div>
                     <div class="card-footer">
-                        <span>Données fournies par CoinGecko</span>
+                        <span>Données fournies par Blockchain.com</span>
                         <span class="status-indicator status-live"></span>
                     </div>
                 </div>
@@ -345,7 +344,6 @@
                         <div class="card-icon"><i class="fas fa-coins"></i></div>
                     </div>
                     <div class="card-value" id="gmt-price">Chargement...</div>
-                    <div class="card-change" id="gmt-change">24h: -</div>
                     <div class="card-footer">
                         <span>Données fournies par CoinGecko</span>
                         <span class="status-indicator status-live"></span>
@@ -375,15 +373,14 @@
     <script>
         // Configuration
         const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
+        const BLOCKCHAIN_API_BASE = 'https://api.blockchain.info';
         const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes en millisecondes
         const RETRY_DELAY = 30000; // 30 secondes en cas d'erreur
 
         // Éléments DOM
         const btcPriceElement = document.getElementById('btc-price');
-        const btcChangeElement = document.getElementById('btc-change');
         const btcHashrateElement = document.getElementById('btc-hashrate');
         const gmtPriceElement = document.getElementById('gmt-price');
-        const gmtChangeElement = document.getElementById('gmt-change');
         const lastUpdateTimeElement = document.getElementById('last-update-time');
         const refreshButton = document.getElementById('refresh-btn');
         const errorNotification = document.getElementById('error-notification');
@@ -414,10 +411,6 @@
             } else {
                 return (hashrate / 1e12).toFixed(2) + ' TH/s';
             }
-        };
-
-        const formatPercentage = (value) => {
-            return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
         };
 
         const formatTimestamp = (timestamp) => {
@@ -476,62 +469,73 @@
             }
         };
 
-        const fetchBitcoinData = async () => {
+        const fetchBitcoinPrice = async () => {
             try {
-                // Récupération du prix et des infos de marché
-                const marketData = await fetchWithErrorHandling(
-                    `${COINGECKO_API_BASE}/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=true&sparkline=false`
+                const data = await fetchWithErrorHandling(
+                    `${COINGECKO_API_BASE}/simple/price?ids=bitcoin&vs_currencies=usd`
                 );
                 
-                // Récupération du hashrate depuis les données de développement
-                const hashrate = marketData.developer_data?.current_hashrate;
-                if (hashrate === undefined || hashrate === null) {
-                    throw new Error('Hashrate non disponible');
+                if (!data.bitcoin || data.bitcoin.usd === undefined) {
+                    throw new Error('Données de prix Bitcoin non disponibles');
                 }
                 
-                return {
-                    price: marketData.market_data.current_price.usd,
-                    priceChange24h: marketData.market_data.price_change_percentage_24h,
-                    hashrate: hashrate
-                };
+                return data.bitcoin.usd;
             } catch (error) {
-                console.error('Erreur dans fetchBitcoinData:', error);
-                throw new Error(`Impossible de récupérer les données Bitcoin: ${error.message}`);
+                console.error('Erreur dans fetchBitcoinPrice:', error);
+                throw new Error(`Impossible de récupérer le prix Bitcoin: ${error.message}`);
             }
         };
 
-        const fetchGMTData = async () => {
+        const fetchBitcoinHashrate = async () => {
             try {
-                // Récupération du prix de GMT (Stepn)
-                const marketData = await fetchWithErrorHandling(
-                    `${COINGECKO_API_BASE}/coins/stepn?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`
+                const data = await fetchWithErrorHandling(
+                    `${BLOCKCHAIN_API_BASE}/charts/hash-rate?format=json&timespan=30days`
                 );
                 
-                return {
-                    price: marketData.market_data.current_price.usd,
-                    priceChange24h: marketData.market_data.price_change_percentage_24h
-                };
+                if (!data.values || data.values.length === 0) {
+                    throw new Error('Données de hashrate non disponibles');
+                }
+                
+                // Prendre la dernière valeur disponible
+                const lastValue = data.values[data.values.length - 1];
+                return lastValue.y;
             } catch (error) {
-                console.error('Erreur dans fetchGMTData:', error);
-                throw new Error(`Impossible de récupérer les données GMT: ${error.message}`);
+                console.error('Erreur dans fetchBitcoinHashrate:', error);
+                throw new Error(`Impossible de récupérer le hashrate Bitcoin: ${error.message}`);
+            }
+        };
+
+        const fetchGMTPrice = async () => {
+            try {
+                const data = await fetchWithErrorHandling(
+                    `${COINGECKO_API_BASE}/simple/price?ids=gmt-token&vs_currencies=usd`
+                );
+                
+                if (!data['gmt-token'] || data['gmt-token'].usd === undefined) {
+                    throw new Error('Données de prix GMT non disponibles');
+                }
+                
+                return data['gmt-token'].usd;
+            } catch (error) {
+                console.error('Erreur dans fetchGMTPrice:', error);
+                throw new Error(`Impossible de récupérer le prix GMT: ${error.message}`);
             }
         };
 
         // Mise à jour de l'interface
-        const updateUI = (btcData, gmtData) => {
+        const updateUI = (btcPrice, btcHashrate, gmtPrice) => {
             // Mise à jour des données Bitcoin
-            if (btcData) {
-                btcPriceElement.textContent = formatCurrency(btcData.price, 'USD');
-                btcChangeElement.textContent = `24h: ${formatPercentage(btcData.priceChange24h)}`;
-                btcChangeElement.className = `card-change ${btcData.priceChange24h >= 0 ? 'positive' : 'negative'}`;
-                btcHashrateElement.textContent = formatHashrate(btcData.hashrate);
+            if (btcPrice !== undefined) {
+                btcPriceElement.textContent = formatCurrency(btcPrice, 'USD');
+            }
+            
+            if (btcHashrate !== undefined) {
+                btcHashrateElement.textContent = formatHashrate(btcHashrate);
             }
             
             // Mise à jour des données GMT
-            if (gmtData) {
-                gmtPriceElement.textContent = formatCurrency(gmtData.price, 'USD');
-                gmtChangeElement.textContent = `24h: ${formatPercentage(gmtData.priceChange24h)}`;
-                gmtChangeElement.className = `card-change ${gmtData.priceChange24h >= 0 ? 'positive' : 'negative'}`;
+            if (gmtPrice !== undefined) {
+                gmtPriceElement.textContent = formatCurrency(gmtPrice, 'USD');
             }
             
             // Mise à jour de l'horodatage
@@ -550,12 +554,13 @@
             
             try {
                 // Récupération en parallèle des données
-                const [btcData, gmtData] = await Promise.all([
-                    fetchBitcoinData(),
-                    fetchGMTData()
+                const [btcPrice, btcHashrate, gmtPrice] = await Promise.all([
+                    fetchBitcoinPrice(),
+                    fetchBitcoinHashrate(),
+                    fetchGMTPrice()
                 ]);
                 
-                updateUI(btcData, gmtData);
+                updateUI(btcPrice, btcHashrate, gmtPrice);
                 
                 // Réactivation des intervalles en cas de succès après une erreur
                 if (updateIntervalId === null) {
