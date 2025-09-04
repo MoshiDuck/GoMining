@@ -7,15 +7,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
             --accent-color: #e74c3c;
             --light-color: #ecf0f1;
             --dark-color: #34495e;
             --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-            --smooth-transition: all 0.3s ease;
+            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         * {
@@ -26,86 +24,77 @@
         }
         
         body {
-            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
-            color: var(--light-color);
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: var(--dark-color);
             line-height: 1.6;
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
         }
         
         header {
+            background: var(--secondary-color);
+            color: white;
             text-align: center;
-            padding: 30px 0;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--card-shadow);
+            padding: 30px 20px;
         }
         
         h1 {
-            font-size: 2.8rem;
+            font-size: 2.2rem;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .subtitle {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             opacity: 0.9;
-            max-width: 700px;
-            margin: 0 auto;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
         }
         
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--card-shadow);
-            transition: var(--smooth-transition);
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
         }
         
         .card-title {
-            font-size: 1.6rem;
-            margin-bottom: 25px;
-            color: var(--light-color);
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 15px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        
-        .card-title i {
-            color: var(--secondary-color);
         }
         
         .form-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
+            margin-bottom: 20px;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
-            font-size: 1.1rem;
         }
         
         .input-with-icon {
@@ -123,70 +112,81 @@
         input[type="number"] {
             width: 100%;
             padding: 15px 15px 15px 45px;
-            border: none;
+            border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 1.1rem;
-            transition: var(--smooth-transition);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
         }
         
         input[type="number"]:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.5);
-            background: white;
-        }
-        
-        .advanced-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            transition: var(--smooth-transition);
-        }
-        
-        .advanced-toggle:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-        
-        .advanced-content {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
         
         button {
-            background: var(--secondary-color);
+            background: var(--primary-color);
             color: white;
             border: none;
-            padding: 16px 32px;
+            padding: 16px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1.1rem;
             font-weight: 600;
-            transition: var(--smooth-transition);
+            transition: all 0.3s;
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
         }
         
         button:hover {
             background: #2980b9;
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         }
         
-        button:active {
-            transform: translateY(0);
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .loader-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            display: none;
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .success {
+            display: none;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
         }
         
         .results {
@@ -204,15 +204,10 @@
         .result-item {
             display: flex;
             justify-content: space-between;
-            padding: 18px 15px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            background: #f8f9fa;
             border-radius: 8px;
-            transition: var(--smooth-transition);
-        }
-        
-        .result-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
+            border-left: 4px solid var(--primary-color);
         }
         
         .result-label {
@@ -229,7 +224,7 @@
         
         .market-data {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-top: 30px;
         }
@@ -238,15 +233,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            background: #f8f9fa;
             border-radius: 8px;
-            transition: var(--smooth-transition);
-        }
-        
-        .market-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-3px);
         }
         
         .market-name {
@@ -258,50 +247,16 @@
         
         .market-value {
             font-weight: 700;
-            color: var(--secondary-color);
+            color: var(--primary-color);
         }
         
-        .loader {
-            display: none;
-            text-align: center;
-            margin: 30px 0;
-        }
-        
-        .loader-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid var(--secondary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1.5s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            display: none;
-            background: rgba(231, 76, 60, 0.2);
-            color: #ffb8b8;
-            padding: 20px;
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            text-align: center;
-            border-left: 5px solid var(--accent-color);
-        }
-        
-        .success {
-            display: none;
-            background: rgba(46, 204, 113, 0.2);
-            color: #a8ffc5;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-            border-left: 5px solid var(--success-color);
+            font-size: 0.9rem;
+            border-left: 4px solid var(--primary-color);
         }
         
         @media (min-width: 768px) {
@@ -309,42 +264,18 @@
                 grid-template-columns: 1fr 1fr;
             }
             
-            .result-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
             .market-data {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        @media (min-width: 992px) {
-            .market-data {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
         }
         
         .footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 30px;
             padding: 20px;
-            opacity: 0.8;
+            color: white;
             font-size: 0.9rem;
-        }
-        
-        .logo {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: var(--secondary-color);
-        }
-        
-        .info-text {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-size: 0.95rem;
-            border-left: 4px solid var(--secondary-color);
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -355,11 +286,16 @@
                 <i class="fas fa-bitcoin"></i>
             </div>
             <h1>Calculateur de Rentabilité Minière</h1>
-            <p class="subtitle">Estimez votre rentabilité minière en temps réel avec les dernières données du marché</p>
+            <p class="subtitle">Estimez votre rentabilité minière en temps réel</p>
         </header>
         
         <div class="card">
-            <h2 class="card-title"><i class="fas fa-sliders-h"></i> Paramètres de calcul</h2>
+            <h2 class="card-title"><i class="fas fa-calculator"></i> Paramètres de calcul</h2>
+            
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i> Les calculs utilisent les tarifs standards de l'industrie. Aucun paramètre technique requis.
+            </div>
+            
             <form id="calculator-form">
                 <div class="form-grid">
                     <div class="form-group">
@@ -379,137 +315,87 @@
                     </div>
                 </div>
                 
-                <div class="info-text">
-                    <i class="fas fa-info-circle"></i> La remise totale affecte à la fois les frais d'électricité et les frais de service.
-                </div>
-                
-                <div class="advanced-toggle" id="advanced-toggle">
-                    <span><i class="fas fa-cogs"></i> Paramètres avancés</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                
-                <div class="advanced-content" id="advanced-content">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="electricity-rate">Tarif électrique (USD/kWh)</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-bolt"></i>
-                                <input type="number" id="electricity-rate" step="0.001" value="0.05" placeholder="Ex: 0.05">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="energy-efficiency">Efficacité énergétique (J/TH)</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-leaf"></i>
-                                <input type="number" id="energy-efficiency" step="0.1" value="15" placeholder="Ex: 15">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="service-fee">Frais de service (USD/TH/jour)</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-concierge-bell"></i>
-                            <input type="number" id="service-fee" step="0.0001" value="0.0089" placeholder="Ex: 0.0089">
-                        </div>
-                    </div>
-                    
-                    <div class="info-text">
-                        <i class="fas fa-info-circle"></i> Les valeurs par défaut sont basées sur des estimations standard de l'industrie.
-                    </div>
-                </div>
-                
                 <button type="submit" id="calculate-btn">
                     <i class="fas fa-calculator"></i> Calculer la rentabilité
                 </button>
             </form>
-        </div>
-        
-        <div class="loader" id="loader">
-            <div class="loader-spinner"></div>
-            <p>Calcul en cours...</p>
-        </div>
-        
-        <div class="error" id="error-message">
-            <i class="fas fa-exclamation-circle"></i> Une erreur s'est produite lors du calcul. Veuillez vérifier votre connexion et réessayer.
-        </div>
-        
-        <div class="success" id="success-message">
-            <i class="fas fa-check-circle"></i> Calcul terminé avec succès!
-        </div>
-        
-        <div class="card results" id="results">
-            <h2 class="card-title"><i class="fas fa-chart-line"></i> Résultats du calcul</h2>
             
-            <div class="result-grid">
-                <div class="result-item">
-                    <span class="result-label"><i class="fas fa-coins"></i> Récompense en satoshi:</span>
-                    <span class="result-value" id="reward">-</span>
-                </div>
-                
-                <div class="result-item">
-                    <span class="result-label"><i class="fas fa-bolt"></i> Frais d'électricité:</span>
-                    <span class="result-value" id="electricity-fee">-</span>
-                </div>
-                
-                <div class="result-item">
-                    <span class="result-label"><i class="fas fa-tools"></i> Coût du service:</span>
-                    <span class="result-value" id="service-fee-result">-</span>
-                </div>
-                
-                <div class="result-item">
-                    <span class="result-label"><i class="fas fa-percent"></i> Remise totale appliquée:</span>
-                    <span class="result-value" id="discount-value">-</span>
-                </div>
+            <div class="loader" id="loader">
+                <div class="loader-spinner"></div>
+                <p>Calcul en cours...</p>
             </div>
             
-            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Données de marché</h3>
+            <div class="error" id="error-message">
+                <i class="fas fa-exclamation-circle"></i> Une erreur s'est produite lors du calcul. Veuillez vérifier votre connexion et réessayer.
+            </div>
             
-            <div class="market-data">
-                <div class="market-item">
-                    <div class="market-name"><i class="fab fa-bitcoin"></i> Prix BTC</div>
-                    <div class="market-value" id="btc-price">-</div>
+            <div class="success" id="success-message">
+                <i class="fas fa-check-circle"></i> Calcul terminé avec succès!
+            </div>
+            
+            <div class="results" id="results">
+                <h2 class="card-title"><i class="fas fa-chart-line"></i> Résultats du calcul</h2>
+                
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span class="result-label"><i class="fas fa-coins"></i> Récompense quotidienne:</span>
+                        <span class="result-value" id="reward">-</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label"><i class="fas fa-bolt"></i> Frais d'électricité:</span>
+                        <span class="result-value" id="electricity-fee">-</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label"><i class="fas fa-tools"></i> Coût du service:</span>
+                        <span class="result-value" id="service-fee">-</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label"><i class="fas fa-hand-holding-usd"></i> Profit quotidien:</span>
+                        <span class="result-value" id="profit">-</span>
+                    </div>
                 </div>
                 
-                <div class="market-item">
-                    <div class="market-name"><i class="fas fa-rocket"></i> Prix GMT</div>
-                    <div class="market-value" id="gmt-price">-</div>
-                </div>
+                <h2 class="card-title"><i class="fas fa-globe"></i> Données de marché</h2>
                 
-                <div class="market-item">
-                    <div class="market-name"><i class="fas fa-mountain"></i> Difficulté réseau</div>
-                    <div class="market-value" id="difficulty">-</div>
-                </div>
-                
-                <div class="market-item">
-                    <div class="market-name"><i class="fas fa-tachometer-alt"></i> Hashrate réseau</div>
-                    <div class="market-value" id="network-hashrate">-</div>
+                <div class="market-data">
+                    <div class="market-item">
+                        <div class="market-name"><i class="fab fa-bitcoin"></i> Prix BTC</div>
+                        <div class="market-value" id="btc-price">-</div>
+                    </div>
+                    
+                    <div class="market-item">
+                        <div class="market-name"><i class="fas fa-rocket"></i> Prix GMT</div>
+                        <div class="market-value" id="gmt-price">-</div>
+                    </div>
+                    
+                    <div class="market-item">
+                        <div class="market-name"><i class="fas fa-mountain"></i> Difficulté réseau</div>
+                        <div class="market-value" id="difficulty">-</div>
+                    </div>
+                    
+                    <div class="market-item">
+                        <div class="market-name"><i class="fas fa-tachometer-alt"></i> Hashrate réseau</div>
+                        <div class="market-value" id="network-hashrate">-</div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <div class="footer">
-            <p>Calculateur de rentabilité minière &copy; 2023</p>
-            <p>Les données de marché sont fournies par CoinGecko et Blockchain.info</p>
-        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Calculateur de rentabilité minière &copy; 2023</p>
+        <p>Les données de marché sont fournies par CoinGecko et Blockchain.info</p>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Gestion de l'affichage des paramètres avancés
-            const advancedToggle = document.getElementById('advanced-toggle');
-            const advancedContent = document.getElementById('advanced-content');
-            
-            advancedToggle.addEventListener('click', function() {
-                if (advancedContent.style.display === 'block') {
-                    advancedContent.style.display = 'none';
-                    advancedToggle.querySelector('.fa-chevron-down').classList.replace('fa-chevron-up', 'fa-chevron-down');
-                } else {
-                    advancedContent.style.display = 'block';
-                    advancedToggle.querySelector('.fa-chevron-down').classList.replace('fa-chevron-down', 'fa-chevron-up');
-                }
-            });
+            // Paramètres prédéfinis (valeurs standards de l'industrie)
+            const ELECTRICITY_RATE = 0.05; // USD/kWh
+            const ENERGY_EFFICIENCY = 15; // J/TH
+            const SERVICE_FEE = 0.0089; // USD/TH/jour
             
             // Gestion de la soumission du formulaire
             document.getElementById('calculator-form').addEventListener('submit', async function(e) {
@@ -523,9 +409,6 @@
                 
                 const th = parseFloat(document.getElementById('th').value);
                 const totalDiscount = parseFloat(document.getElementById('discount').value);
-                const electricityRate = parseFloat(document.getElementById('electricity-rate').value);
-                const energyEfficiency = parseFloat(document.getElementById('energy-efficiency').value);
-                const serviceFee = parseFloat(document.getElementById('service-fee').value);
                 
                 try {
                     // Récupérer les données de marché
@@ -541,15 +424,15 @@
                     }
                     
                     // Calculer les récompenses et frais
-                    const [reward, electricityFee, serviceFeeResult] = calculateFeesAndRewards(
-                        th, totalDiscount, electricityRate, energyEfficiency, serviceFee, gmtPrice
+                    const [reward, electricityFee, serviceFeeResult, profit] = calculateFeesAndRewards(
+                        th, totalDiscount, btcPrice, gmtPrice
                     );
                     
                     // Afficher les résultats
-                    document.getElementById('reward').textContent = `${reward.toFixed(2)} sat`;
-                    document.getElementById('electricity-fee').textContent = `${electricityFee.toFixed(8)} GOMINING`;
-                    document.getElementById('service-fee-result').textContent = `${serviceFeeResult.toFixed(8)} GOMINING`;
-                    document.getElementById('discount-value').textContent = `${totalDiscount.toFixed(2)}%`;
+                    document.getElementById('reward').textContent = `${reward.toFixed(2)} sat/jour`;
+                    document.getElementById('electricity-fee').textContent = `${electricityFee.toFixed(2)} GMT/jour`;
+                    document.getElementById('service-fee').textContent = `${serviceFeeResult.toFixed(2)} GMT/jour`;
+                    document.getElementById('profit').textContent = `${profit.toFixed(2)} GMT/jour`;
                     document.getElementById('btc-price').textContent = `$${btcPrice.toFixed(2)}`;
                     document.getElementById('gmt-price').textContent = `$${gmtPrice.toFixed(4)}`;
                     document.getElementById('difficulty').textContent = difficulty.toLocaleString();
@@ -620,19 +503,23 @@
                 }
             }
             
-            function calculateFeesAndRewards(th, totalDiscount, electricityRate, energyEfficiency, serviceFee, gmtPrice) {
+            function calculateFeesAndRewards(th, totalDiscount, btcPrice, gmtPrice) {
                 const rewardPerTh = 49; // satoshi par TH
                 const reward = rewardPerTh * th;
                 
                 // Frais d'électricité (formule mise à jour)
-                const electricityCost = (electricityRate * 24 * energyEfficiency) / gmtPrice / 1000;
+                const electricityCost = (ELECTRICITY_RATE * 24 * ENERGY_EFFICIENCY) / gmtPrice / 1000;
                 const electricityFee = electricityCost * th * (1 - totalDiscount / 100);
                 
                 // Frais de service (formule mise à jour)
-                const serviceCost = serviceFee / gmtPrice;
+                const serviceCost = SERVICE_FEE / gmtPrice;
                 const serviceFeeResult = serviceCost * th * (1 - totalDiscount / 100);
                 
-                return [reward, electricityFee, serviceFeeResult];
+                // Profit quotidien (récompense convertie en GMT moins les frais)
+                const rewardInGmt = (reward * btcPrice / 100000000) / gmtPrice; // Conversion satoshi → BTC → USD → GMT
+                const profit = rewardInGmt - electricityFee - serviceFeeResult;
+                
+                return [reward, electricityFee, serviceFeeResult, profit];
             }
         });
     </script>
