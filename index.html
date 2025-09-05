@@ -1,220 +1,519 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Simulateur GoMining avec Halving, Frais et Infos</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Simulateur GoMining — Publicité & Don (Clarifié)</title>
+
+<!-- Google AdSense (ton script fourni) -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7464691689603309"
+     crossorigin="anonymous"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <style>
-body { font-family: Arial, sans-serif; background: #f0f3f5; color: #333; padding: 20px; }
-h1 { color: #2c3e50; text-align: center; }
-.container { max-width: 1000px; margin: auto; }
-.card { background: white; padding: 15px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
-label { display: block; margin-top: 10px; font-weight: bold; }
-input, select { padding: 5px; margin-top: 5px; width: 120px; }
-button { margin-top: 15px; padding: 10px 20px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 5px;}
-button:hover { background: #2ecc71; }
-table { border-collapse: collapse; width: 100%; margin-top: 15px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-th { background: #2980b9; color: white; }
-canvas { margin-top: 20px; background: white; padding: 10px; border-radius: 8px; }
-.info { font-size: 0.9em; color: #555; margin-top: 5px;}
-.flex-container { display: flex; flex-wrap: wrap; gap: 20px; }
-.flex-left { flex:1; min-width:280px; }
-.flex-right { flex:1; min-width:250px; }
+  :root{
+    --bg:#eef2f7; --card:#fff; --accent:#2980b9; --accent-2:#27ae60; --muted:#6b7280;
+  }
+  body{font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#212529; margin:0;}
+  .container{max-width:1100px;margin:18px auto;padding:16px;}
+  h1{text-align:center;color:#213246;margin:6px 0 14px;}
+  .tabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .tab-btn{flex:1;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700}
+  .tab-btn.active{background:var(--accent-2)}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+  .card{background:var(--card);border-radius:12px;box-shadow:0 6px 18px rgba(15,30,40,0.06);padding:18px;margin-bottom:14px}
+  label{display:block;font-weight:600;margin-top:10px}
+  input, select{width:100%;padding:10px;border-radius:8px;border:1px solid #d5dce6;margin-top:6px}
+  button.primary{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent-2);color:#fff;font-weight:700;margin-top:12px;cursor:pointer}
+  .flex-info{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+  .info-card{flex:1;min-width:140px;background:#f7fbff;padding:12px;border-radius:10px;text-align:center;box-shadow:0 2px 8px rgba(10,20,30,0.03)}
+  .table-wrap{overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:720px}
+  th,td{padding:10px;border:1px solid #e6eef6;text-align:center;font-size:0.95rem}
+  th{background:var(--accent);color:#fff;font-weight:700}
+  canvas{width:100%!important;height:420px!important}
+  .don-grid{display:flex;flex-direction:column;gap:12px}
+  .don-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .addr{background:#f1f5f9;padding:8px;border-radius:8px;flex:1;word-break:break-all;font-family:monospace}
+  .copy-btn{padding:8px 10px;border-radius:8px;border:0;cursor:pointer;background:#2563eb;color:white;font-weight:700}
+  .tag{display:inline-block;padding:4px 8px;border-radius:6px;background:#eef2ff;color:#2563eb;font-weight:700;font-size:0.82rem;margin-bottom:6px}
+  .warn{background:#fff4e5;border-left:4px solid #ffb020;padding:10px;border-radius:6px;color:#6b4b00;margin:10px 0}
+  .small{font-size:0.85rem;color:var(--muted)}
+  .toast{position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.2);display:none}
+  .ad-banner{margin-top:14px;text-align:center;border-radius:10px;overflow:hidden}
+  /* ensure ad responsive container inside card bottom */
+  .ad-slot {display:inline-block; max-width:100%; width:100%;}
+  @media(max-width:720px){ .info-card{min-width:100%} .don-row{flex-direction:column;align-items:stretch} }
 </style>
 </head>
 <body>
 <div class="container">
-<h1>Simulateur GoMining avec Halving, Frais et Infos</h1>
+  <h1>Simulateur GoMining — Publicité & Don (Clarifié)</h1>
 
-<div class="flex-container">
-  <div class="card flex-left">
-    <label>TH actuel : <input type="number" id="th" value="28"></label>
-    <label>Remise (%) : <input type="number" id="remise" value="24.4"></label>
-    <label>Watt/TH : <input type="number" id="watt" value="15"></label>
-    <label>Stratégie : 
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab(0)">Simulation</button>
+    <button class="tab-btn" onclick="showTab(1)">Résultats</button>
+    <button class="tab-btn" onclick="showTab(2)">Graphique</button>
+    <button class="tab-btn" onclick="showTab(3)">Publicité / Don</button>
+  </div>
+
+  <!-- SIMULATION TAB -->
+  <div class="tab-content active">
+    <div class="card">
+      <label>TH actuel</label>
+      <input id="th" type="number" value="28" step="0.000001" />
+
+      <label>Remise (%)</label>
+      <input id="remise" type="number" value="24.4" step="0.1" />
+
+      <label>Watt / TH</label>
+      <input id="watt" type="number" value="15" step="0.1" />
+
+      <label>Stratégie</label>
       <select id="strategy">
-        <option value="gomining">Gomining (cumulé)</option>
-        <option value="reinvest">Réinvestissement (pas cumulés)</option>
+        <option value="gomining">1 — Gomining (cumulé)</option>
+        <option value="reinvest">2 — Réinvestissement (non cumulés)</option>
       </select>
-    </label>
-    <label>Période : 
+
+      <label>Période</label>
       <select id="unit">
-        <option value="1">Jours</option>
-        <option value="2">Mois</option>
-        <option value="3">Années</option>
+        <option value="1">1 — Jours</option>
+        <option value="2">2 — Mois</option>
+        <option value="3">3 — Années</option>
       </select>
-    </label>
-    <label>Nombre : <input type="number" id="timeValue" value="5"></label>
-    <button onclick="simulate()">Simuler</button>
-    <div class="info">💡 Gomining = gains cumulés, Réinvestissement = gains du jour seulement. Halving BTC pris en compte. Frais affichés séparément.</div>
+
+      <label>Nombre (ex : 5)</label>
+      <input id="timeValue" type="number" value="5" />
+
+      <label>Croissance annuelle BTC (%)</label>
+      <input id="btcGrowth" type="number" value="20" step="0.1" />
+
+      <button class="primary" onclick="simulate()">Simuler</button>
+      <div class="small" style="margin-top:8px">Gomining cumule les récompenses ; Réinvestissement convertit & augmente le TH quotidien (+5% réinvestissement). Halving, frais, hashrate & BTC growth appliqués.</div>
+    </div>
+
+    <div class="flex-info">
+      <div class="info-card">Prix BTC : <div id="btcPrice">—</div></div>
+      <div class="info-card">Hashrate réseau : <div id="networkHashrate">—</div> TH/s</div>
+      <div class="info-card">Prix GoMining (GMT) : <div id="gmtPrice">—</div></div>
+      <div class="info-card">Reward brut / TH : <div id="rewardPerTHDisplay">—</div> sat/jour</div>
+      <div class="info-card">Prochain halving : <div id="nextHalving">—</div></div>
+    </div>
+
+    <!-- Bannière pub en bas de l'onglet Simulation -->
+    <div class="ad-banner card" aria-hidden="true">
+      <ins class="adsbygoogle ad-slot"
+           style="display:block"
+           data-ad-client="ca-pub-7464691689603309"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
   </div>
 
-  <div class="card flex-right">
-    <h3>Infos réseau & prix</h3>
-    <p>Prix BTC : <span id="btcPrice">--</span></p>
-    <p>Hashrate réseau : <span id="networkHashrate">--</span> TH/s (croissance 3-5%/mois)</p>
-    <p>Prix GoMining (GMT) : <span id="gmtPrice">--</span></p>
-    <p>Reward brut / TH : <span id="rewardPerTHDisplay">--</span> sat/jour</p>
-    <p>Prochain Halving : <span id="nextHalving">--</span> (récompense divisée par 2 à chaque halving)</p>
-    <p>Facteur division actuel : <span id="halvingFactor">--</span></p>
+  <!-- RESULTS TAB -->
+  <div class="tab-content">
+    <div class="card table-wrap">
+      <h3 id="tableTitle">Tableau des résultats</h3>
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Jour</th>
+            <th>Puissance TH</th>
+            <th>Reward brut (sat)</th>
+            <th>Frais électricité (sat)</th>
+            <th>Frais service (sat)</th>
+            <th>Gain net (sat)</th>
+            <th>Gain net ($)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Bannière pub en bas de l'onglet Résultats -->
+    <div class="ad-banner card" aria-hidden="true">
+      <ins class="adsbygoogle ad-slot"
+           style="display:block"
+           data-ad-client="ca-pub-7464691689603309"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
   </div>
+
+  <!-- CHART TAB -->
+  <div class="tab-content">
+    <div class="card">
+      <canvas id="chart"></canvas>
+    </div>
+
+    <!-- Bannière pub en bas de l'onglet Graphique -->
+    <div class="ad-banner card" aria-hidden="true">
+      <ins class="adsbygoogle ad-slot"
+           style="display:block"
+           data-ad-client="ca-pub-7464691689603309"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  </div>
+
+  <!-- PUBLICITÉ / DON TAB -->
+  <div class="tab-content">
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Publicité & Don — adresses</h3>
+      <div class="warn">
+        <strong>ATTENTION :</strong> Vérifie toujours le <em>réseau</em> avant d'envoyer (ERC20 vs BEP20 vs native coin). <br>
+        Les adresses token (GOMINING / GMT) sont spécifiques au réseau (BEP20 / ERC20 / SPL ...). <br>
+        N'envoie pas un token sur l'adresse d'une chaîne différente — tu pourrais perdre tes fonds.
+      </div>
+
+      <div class="don-grid">
+        <div>
+          <div class="tag">GOMINING (GMT) — BNB Chain (BEP20)</div>
+          <div class="don-row">
+            <div class="addr" id="addr_gmt_bep">0xF7f34ecB6c5f3F1C06C4387AC9c5cB7eDD488e8f</div>
+            <button class="copy-btn" onclick="copyAddr('addr_gmt_bep')">Copier</button>
+          </div>
+          <div class="small">Minimum suggéré : <strong>10 GMT</strong></div>
+        </div>
+
+        <div>
+          <div class="tag">GOMINING (GMT) — Ethereum (ERC20)</div>
+          <div class="don-row">
+            <div class="addr" id="addr_gmt_erc">0xF7f34ecB6c5f3F1C06C4387AC9c5cB7eDD488e8f</div>
+            <button class="copy-btn" onclick="copyAddr('addr_gmt_erc')">Copier</button>
+          </div>
+          <div class="small">Minimum suggéré : <strong>10 GMT</strong></div>
+        </div>
+
+        <div>
+          <div class="tag">GOMINING — TON</div>
+          <div class="don-row">
+            <div class="addr" id="addr_ton">UQAc0FYVmX9dNSnjkj1KDT1chcQSV-bxeYuAz7lz8qubh6Qz</div>
+            <button class="copy-btn" onclick="copyAddr('addr_ton')">Copier</button>
+          </div>
+          <div class="small">Minimum suggéré : <strong>10 GMT</strong></div>
+        </div>
+
+        <div>
+          <div class="tag">GOMINING — Solana (SPL)</div>
+          <div class="don-row">
+            <div class="addr" id="addr_sol">9CzP4YfcrALBLmzfLjqpErfLtAsGaAKpM9C7T3fP2v4s</div>
+            <button class="copy-btn" onclick="copyAddr('addr_sol')">Copier</button>
+          </div>
+          <div class="small">Minimum suggéré : <strong>10 GMT</strong></div>
+        </div>
+
+        <div>
+          <div class="tag">Paiement ETH (native) — min 0.0025 ETH</div>
+          <div class="don-row">
+            <div class="addr" id="addr_eth_native">0xF7f34ecB6c5f3F1C06C4387AC9c5cB7eDD488e8f</div>
+            <button class="copy-btn" onclick="copyAddr('addr_eth_native')">Copier</button>
+          </div>
+          <div class="small">Remarque : cette adresse est listée pour ETH natif (vérifie réseau EVM).</div>
+        </div>
+
+        <div>
+          <div class="tag">BTC on-chain — min 0.00001 BTC</div>
+          <div class="don-row">
+            <div class="addr" id="addr_btc">bc1qtw95rgr9atshrdrt8xyyjdv8c8hpltqsa3hy73</div>
+            <button class="copy-btn" onclick="copyAddr('addr_btc')">Copier</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="tag">USDC (ERC20 / BEP20) — min 10 USDC</div>
+          <div class="don-row">
+            <div class="addr" id="addr_usdc">0xF7f34ecB6c5f3F1C06C4387AC9c5cB7eDD488e8f</div>
+            <button class="copy-btn" onclick="copyAddr('addr_usdc')">Copier</button>
+          </div>
+          <div class="small">Remarque : même adresse utilisée pour token/USDC selon réseau — <strong>vérifie avant d'envoyer</strong>.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bannière pub en bas de l'onglet Publicité / Don -->
+    <div class="ad-banner card" aria-hidden="true">
+      <ins class="adsbygoogle ad-slot"
+           style="display:block"
+           data-ad-client="ca-pub-7464691689603309"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  </div>
+
 </div>
 
-<div class="card table-container">
-  <h3 id="tableTitle">Tableau des résultats</h3>
-  <table id="resultTable">
-    <thead>
-      <tr>
-        <th>Jour</th>
-        <th>Puissance TH</th>
-        <th>Reward brut (sat)</th>
-        <th>Frais électricité (sat)</th>
-        <th>Frais service (sat)</th>
-        <th>Gain net (sat)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<div class="card">
-  <canvas id="chart" width="800" height="300"></canvas>
-</div>
+<div id="toast" class="toast"></div>
 
 <script>
+/* ---------- UI helpers ---------- */
+function showTab(idx){
+  document.querySelectorAll('.tab-content').forEach((el,i)=>el.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-btn').forEach((el,i)=>el.classList.toggle('active', i===idx));
+}
+function showToast(msg, ms=1600){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display='block';
+  setTimeout(()=> t.style.display='none', ms);
+}
+function copyAddr(id){
+  const txt = document.getElementById(id).innerText.trim();
+  if(!txt) return showToast('Aucune adresse disponible');
+  navigator.clipboard?.writeText(txt).then(()=> showToast('Adresse copiée ✔')) .catch(()=> { alert('Copie non supportée, sélectionne manuellement :\\n' + txt); });
+}
+
+/* ---------- simulate model (conserve toutes fonctionnalités) ---------- */
+const FIRST_HALVING = new Date("2012-11-28");
+const INITIAL_REWARD = 50; // satoshi/TH/jour
+
+function halvingsSince(date){
+  const diff = date - FIRST_HALVING;
+  const years = diff / (1000*60*60*24*365);
+  return Math.floor(years / 4);
+}
+function getRewardPerTH(date){
+  const h = halvingsSince(date);
+  return INITIAL_REWARD / Math.pow(2, h);
+}
+function getNextHalving(date){
+  const h = halvingsSince(date);
+  const next = new Date(FIRST_HALVING);
+  next.setFullYear(FIRST_HALVING.getFullYear() + 4*(h+1));
+  return next;
+}
+function computeHashrateForMonthFactor(growthRateMonthly, monthsElapsed, baseHashrate){
+  return baseHashrate * Math.pow(1 + growthRateMonthly, monthsElapsed);
+}
+function halvingDaysInRange(startDate, totalDays){
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + totalDays - 1);
+  const arr = [];
+  let hDate = new Date(FIRST_HALVING);
+  while(hDate <= endDate){
+    if(hDate >= startDate){
+      const dayIndex = Math.floor((hDate - startDate) / (1000*60*60*24)) + 1;
+      if(dayIndex >= 1 && dayIndex <= totalDays) arr.push(dayIndex);
+    }
+    hDate = new Date(hDate); hDate.setFullYear(hDate.getFullYear() + 4);
+  }
+  return arr;
+}
+
+/* ---------- simulate ---------- */
 let chartInstance = null;
+async function simulate(){
+  // inputs
+  const thInput = parseFloat(document.getElementById('th').value) || 0;
+  const remise = parseFloat(document.getElementById('remise').value) || 0;
+  const watt = parseFloat(document.getElementById('watt').value) || 0;
+  const strategy = document.getElementById('strategy').value;
+  const unit = document.getElementById('unit').value;
+  const timeValue = parseInt(document.getElementById('timeValue').value) || 0;
+  const btcAnnualGrowth = (parseFloat(document.getElementById('btcGrowth').value)||0) / 100;
 
-// Calcul du reward par TH selon la date et les halvings
-function getRewardPerTH(currentDate) {
-    const firstHalving = new Date("2012-11-28"); // date du premier halving historique BTC
-    const initialReward = 50; // satoshi/TH/jour avant halving
-    let halvingsSince = Math.floor((currentDate - firstHalving)/(1000*60*60*24*365*4)); // tous les 4 ans
-    return initialReward / Math.pow(2, halvingsSince);
-}
+  // fetch prices
+  let btcUSD=0, btcEUR=0, gmtUSD=1, gmtEUR=1;
+  try{
+    const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,gmt-token&vs_currencies=usd,eur");
+    const data = await r.json();
+    btcUSD = data.bitcoin.usd; btcEUR = data.bitcoin.eur;
+    gmtUSD = data["gmt-token"]?.usd ?? 1; gmtEUR = data["gmt-token"]?.eur ?? 1;
+  }catch(e){
+    console.warn("Coingecko failed:", e);
+  }
 
-// Calcul date prochain halving
-function getNextHalving(currentDate) {
-    const firstHalving = new Date("2012-11-28");
-    let halvingsSince = Math.floor((currentDate - firstHalving)/(1000*60*60*24*365*4));
-    let nextHalving = new Date(firstHalving);
-    nextHalving.setFullYear(firstHalving.getFullYear() + 4*(halvingsSince+1));
-    return nextHalving.toLocaleDateString();
-}
+  // update info cards
+  document.getElementById('btcPrice').innerText = btcUSD ? `$${btcUSD.toLocaleString()} / €${btcEUR?.toLocaleString()}` : '—';
+  document.getElementById('gmtPrice').innerText = gmtUSD ? `$${gmtUSD.toLocaleString()} / €${gmtEUR?.toLocaleString()}` : '—';
+  document.getElementById('rewardPerTHDisplay').innerText = getRewardPerTH(new Date()).toFixed(4);
+  document.getElementById('nextHalving').innerText = getNextHalving(new Date()).toLocaleDateString();
 
-// Facteur division actuel depuis le premier halving
-function getHalvingFactor(currentDate) {
-    const firstHalving = new Date("2012-11-28");
-    let halvingsSince = Math.floor((currentDate - firstHalving)/(1000*60*60*24*365*4));
-    return Math.pow(2, halvingsSince);
-}
+  // params
+  const baseHashrate = 500000;
+  const growthRateMonthly = 0.03 + Math.random()*0.02; // fixed for simulation
 
-// Croissance aléatoire du hashrate entre 3 et 5 % par mois
-function getNetworkHashrate(day, baseHashrate) {
-    const monthsElapsed = Math.floor(day / 30);
-    const growthRate = 0.03 + Math.random()*0.02; // 3% à 5%
-    return baseHashrate * Math.pow(1 + growthRate, monthsElapsed);
-}
-
-async function simulate() {
-  const thInput = parseFloat(document.getElementById("th").value);
-  const remise = parseFloat(document.getElementById("remise").value);
-  const watt = parseFloat(document.getElementById("watt").value);
-  const strategy = document.getElementById("strategy").value;
-  const unit = document.getElementById("unit").value;
-  const timeValue = parseInt(document.getElementById("timeValue").value);
-
-  const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,gmt-token&vs_currencies=usd,eur");
-  const data = await res.json();
-  const btcUSD = data.bitcoin.usd;
-  const gmtUSD = data["gmt-token"].usd;
-
-  // Panneau infos
-  document.getElementById("btcPrice").innerText = `$${btcUSD.toLocaleString()} / €${data.bitcoin.eur.toLocaleString()}`;
-  document.getElementById("gmtPrice").innerText = `$${gmtUSD.toLocaleString()} / €${data["gmt-token"].eur.toLocaleString()}`;
-  const baseHashrate = 500000; // TH/s initial
-  document.getElementById("networkHashrate").innerText = baseHashrate.toLocaleString();
-  const today = new Date();
-  document.getElementById("rewardPerTHDisplay").innerText = getRewardPerTH(today).toFixed(2);
-  document.getElementById("nextHalving").innerText = getNextHalving(today);
-  document.getElementById("halvingFactor").innerText = getHalvingFactor(today);
-
+  // days
   let totalDays = 1;
-  if (unit == "1") totalDays = timeValue;
-  else if (unit == "2") totalDays = timeValue * 30;
-  else if (unit == "3") totalDays = timeValue * 365;
+  if(unit === "1") totalDays = timeValue;
+  else if(unit === "2") totalDays = timeValue * 30;
+  else totalDays = timeValue * 365;
 
+  // clear table
+  const tbody = document.querySelector('#resultTable tbody');
+  tbody.innerHTML = '';
+
+  // loop
   let th = thInput;
-  let tbody = document.querySelector("#resultTable tbody");
-  tbody.innerHTML = "";
-  document.getElementById("tableTitle").innerText = strategy=="gomining"?"Tableau Gomining Cumulé":"Tableau Réinvestissement";
-
-  let labels = [], gainHistory = [];
   let cumulativeRewardSat = 0;
-  const startDate = new Date(); // date de départ
+  const startDate = new Date();
+  let currentBTC = btcUSD;
+  let lastBTC = currentBTC;
+  const labels = [];
+  const gainHistory = [];
 
-  for (let day = 1; day <= totalDays; day++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + day - 1);
+  const halvingDays = halvingDaysInRange(startDate, totalDays);
 
-    // Reward brut avec halving
-    const rewardPerTH = getRewardPerTH(currentDate);
+  for(let day=1; day<=totalDays; day++){
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + day - 1);
+
+    const rewardPerTH = getRewardPerTH(date);
     const rewardBrut = rewardPerTH * th;
 
-    const electricityFee = (0.05*24*watt/gmtUSD/1000)*(1-remise/100);
-    const serviceFee = (0.0089/gmtUSD)*(1-remise/100);
-    const totalElectricityFee = electricityFee*th;
-    const totalServiceFee = serviceFee*th;
+    const electricityFeePerTH = (0.05 * 24 * watt / (gmtUSD || 1) / 1000) * (1 - remise/100);
+    const serviceFeePerTH = (0.0089 / (gmtUSD || 1)) * (1 - remise/100);
+    const totalElectricityFee = electricityFeePerTH * th;
+    const totalServiceFee = serviceFeePerTH * th;
+
     const rewardNet = rewardBrut - (totalElectricityFee + totalServiceFee);
 
-    // Hashrate variable
-    const currentHashrate = getNetworkHashrate(day, baseHashrate);
-    if(day===1 || day%30===0) document.getElementById("networkHashrate").innerText = Math.round(currentHashrate).toLocaleString();
+    const monthsElapsed = Math.floor((day-1) / 30);
+    const currentHashrate = computeHashrateForMonthFactor(growthRateMonthly, monthsElapsed, baseHashrate);
+    if(day===1 || day%30===0) document.getElementById('networkHashrate').innerText = Math.round(currentHashrate).toLocaleString();
 
-    if(strategy=="gomining") cumulativeRewardSat += rewardNet; else cumulativeRewardSat = rewardNet;
+    if(day > 1 && lastBTC){
+      currentBTC = lastBTC * Math.pow(1 + btcAnnualGrowth, 1/365);
+    }
+    lastBTC = currentBTC;
 
-    if(strategy=="reinvest"){
-      const rewardUSD = (rewardNet/1e8)*btcUSD;
-      const reinvestUSD = rewardUSD*1.05;
-      const thBought = reinvestUSD/28;
+    if(strategy === 'gomining'){
+      cumulativeRewardSat += rewardNet;
+    } else {
+      cumulativeRewardSat = rewardNet;
+    }
+
+    if(strategy === 'reinvest'){
+      const rewardUSD = (rewardNet / 1e8) * currentBTC;
+      const reinvestUSD = rewardUSD * 1.05;
+      const thBought = reinvestUSD / 28;
       th += thBought;
     }
 
-    if ((unit=="2" && day%30==0) || (unit=="3" && day%365==0) || unit=="1") {
-      const row = document.createElement("tr");
-      row.innerHTML = `
+    const showRow = (unit === "1") || (unit === "2" && day % 30 === 0) || (unit === "3" && day % 365 === 0);
+    if(showRow){
+      const rewardUSD_display = ((strategy === 'gomining' ? cumulativeRewardSat : rewardNet) / 1e8) * currentBTC;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
         <td>${day}</td>
         <td>${th.toFixed(6)}</td>
-        <td>${rewardBrut.toFixed(2)}</td>
-        <td>${totalElectricityFee.toFixed(4)}</td>
-        <td>${totalServiceFee.toFixed(4)}</td>
-        <td>${(strategy=="gomining"?cumulativeRewardSat:rewardNet).toFixed(2)}</td>
+        <td>${rewardBrut.toFixed(4)}</td>
+        <td>${totalElectricityFee.toFixed(6)}</td>
+        <td>${totalServiceFee.toFixed(6)}</td>
+        <td>${(strategy === 'gomining' ? cumulativeRewardSat : rewardNet).toFixed(4)}</td>
+        <td>$${rewardUSD_display.toFixed(2)}</td>
       `;
-      tbody.appendChild(row);
-
-      labels.push(day);
-      gainHistory.push(strategy=="gomining"?cumulativeRewardSat:rewardNet);
+      tbody.appendChild(tr);
     }
+
+    labels.push(day);
+    gainHistory.push(strategy === 'gomining' ? cumulativeRewardSat : rewardNet);
   }
 
+  // update final BTC display
+  document.getElementById('btcPrice').innerText = currentBTC ? `$${currentBTC.toLocaleString(undefined,{maximumFractionDigits:2})}` : '—';
+
+  // chart
   if(chartInstance) chartInstance.destroy();
-  const ctx = document.getElementById("chart").getContext("2d");
-  const gainMin = Math.min(...gainHistory), gainMax = Math.max(...gainHistory);
+  const ctx = document.getElementById('chart').getContext('2d');
+
+  const maxLabels = 8;
+  const step = Math.max(1, Math.ceil(labels.length / maxLabels));
+  const displayLabels = labels.map((v,i)=> (i % step === 0) ? v : '');
+
+  const halvingLabelIndices = halvingDays.map(d => d - 1).filter(i => i >= 0 && i < labels.length);
+
+  // halving plugin
+  const halvingPlugin = {
+    id: 'halvingLines',
+    afterDatasetsDraw(chart, args, options){
+      if(!options.lines || !options.lines.length) return;
+      const {ctx, chartArea, scales} = chart;
+      ctx.save();
+      ctx.setLineDash([5,4]);
+      ctx.lineWidth = options.lineWidth || 1.6;
+      ctx.strokeStyle = options.color || 'rgba(0, 120, 255, 0.9)';
+      ctx.fillStyle = options.color || 'rgba(0, 120, 255, 0.9)';
+      ctx.font = '12px sans-serif';
+      options.lines.forEach(idx => {
+        const x = scales.x.getPixelForValue(idx);
+        if(isFinite(x)){
+          ctx.beginPath();
+          ctx.moveTo(x, chartArea.top);
+          ctx.lineTo(x, chartArea.bottom);
+          ctx.stroke();
+          ctx.fillText('Halving', x + 6, chartArea.top + 14);
+        }
+      });
+      ctx.restore();
+    }
+  };
+  Chart.register(halvingPlugin);
+
+  const dataset = {
+    label: 'Gain net sat/jour',
+    data: gainHistory,
+    borderColor: function(context){
+      const i = context.dataIndex;
+      if(i === 0) return 'green';
+      return gainHistory[i] < gainHistory[i-1] ? 'red' : 'green';
+    },
+    borderWidth: 2,
+    pointRadius: 2,
+    fill: false,
+    tension: 0.25
+  };
 
   chartInstance = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [{ label: "Gain net sat/jour", data: gainHistory, borderColor: "green", fill: false, tension: 0.3 }]
-    },
+    type: 'line',
+    data: { labels: displayLabels, datasets: [dataset] },
     options: {
-      responsive:true,
-      plugins:{legend:{position:'top'}, tooltip:{mode:'index',intersect:false}},
-      scales:{y:{beginAtZero:false, min:gainMin*0.999, max:gainMax*1.001, title:{display:true,text:'Gain net sat/jour'}}}
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'top', labels:{font:{size:13}} },
+        tooltip: { mode:'index', intersect:false },
+        halvingLines: { lines: halvingLabelIndices, color:'rgba(0,120,255,0.9)', lineWidth:1.6 }
+      },
+      scales: {
+        x: {
+          ticks: { autoSkip: false, maxRotation: 0, font: { size: 12 } },
+          title: { display: true, text: 'Jours (index)', font: { size: 13 } }
+        },
+        y: {
+          beginAtZero: false,
+          ticks: { font: { size: 12 } },
+          title: { display: true, text: 'Gain net (sat/jour)', font: { size: 13 } },
+          min: Math.min(...gainHistory) * 0.999,
+          max: Math.max(...gainHistory) * 1.001
+        }
+      }
     }
   });
-}
-</script>
 
+  // go to results
+  showTab(1);
+} // simulate end
+</script>
 </body>
 </html>
