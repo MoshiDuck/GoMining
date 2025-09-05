@@ -3,15 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Simulateur GoMining — Publicité & Don (Clarifié)</title>
-
-<!-- Google AdSense (ton script fourni) -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7464691689603309"
-     crossorigin="anonymous"></script>
-
-<!-- Chart.js -->
+<title>Simulateur GoMining — Don plein largeur</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
 <style>
   :root{
     --bg:#eef2f7; --card:#fff; --accent:#2980b9; --accent-2:#27ae60; --muted:#6b7280;
@@ -19,9 +12,11 @@
   body{font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#212529; margin:0;}
   .container{max-width:1100px;margin:18px auto;padding:16px;}
   h1{text-align:center;color:#213246;margin:6px 0 14px;}
-  .tabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .tabs{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
   .tab-btn{flex:1;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700}
   .tab-btn.active{background:var(--accent-2)}
+  .don-button-row{display:block;margin-bottom:12px}
+  .btn-don{display:block;width:100%;padding:12px;border-radius:10px;border:none;background:#f59e0b;color:white;font-weight:700;cursor:pointer}
   .tab-content{display:none}
   .tab-content.active{display:block}
   .card{background:var(--card);border-radius:12px;box-shadow:0 6px 18px rgba(15,30,40,0.06);padding:18px;margin-bottom:14px}
@@ -42,27 +37,30 @@
   .tag{display:inline-block;padding:4px 8px;border-radius:6px;background:#eef2ff;color:#2563eb;font-weight:700;font-size:0.82rem;margin-bottom:6px}
   .warn{background:#fff4e5;border-left:4px solid #ffb020;padding:10px;border-radius:6px;color:#6b4b00;margin:10px 0}
   .small{font-size:0.85rem;color:var(--muted)}
+  .promo{background:linear-gradient(90deg,#e6f9f0,#f0fbff);border:1px solid #cfeee0;padding:14px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .promo-code{font-family:monospace;background:#fff;padding:8px 12px;border-radius:8px;border:1px dashed #b7e3c9;font-weight:800}
   .toast{position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.2);display:none}
-  .ad-banner{margin-top:14px;text-align:center;border-radius:10px;overflow:hidden}
-  /* ensure ad responsive container inside card bottom */
-  .ad-slot {display:inline-block; max-width:100%; width:100%;}
-  @media(max-width:720px){ .info-card{min-width:100%} .don-row{flex-direction:column;align-items:stretch} }
+  @media(max-width:720px){ .info-card{min-width:100%} .don-row{flex-direction:column;align-items:stretch} .promo{flex-direction:column;align-items:stretch} }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Simulateur GoMining — Publicité & Don (Clarifié)</h1>
+  <h1>Simulateur GoMining — Don plein largeur</h1>
 
-  <!-- TABS -->
+  <!-- onglets principaux : 3 -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="showTab(0)">Simulation</button>
-    <button class="tab-btn" onclick="showTab(1)">Résultats</button>
-    <button class="tab-btn" onclick="showTab(2)">Graphique</button>
-    <button class="tab-btn" onclick="showTab(3)">Publicité / Don</button>
+    <button class="tab-btn active" onclick="showMainTab(0)">Simulation</button>
+    <button class="tab-btn" onclick="showMainTab(1)">Résultats</button>
+    <button class="tab-btn" onclick="showMainTab(2)">Graphique</button>
   </div>
 
-  <!-- SIMULATION TAB -->
-  <div class="tab-content active">
+  <!-- bouton Don plein largeur (sous les onglets) -->
+  <div class="don-button-row">
+    <button class="btn-don" onclick="showDon()">Don</button>
+  </div>
+
+  <!-- SIMULATION -->
+  <div id="tab-sim" class="tab-content active">
     <div class="card">
       <label>TH actuel</label>
       <input id="th" type="number" value="28" step="0.000001" />
@@ -103,23 +101,10 @@
       <div class="info-card">Reward brut / TH : <div id="rewardPerTHDisplay">—</div> sat/jour</div>
       <div class="info-card">Prochain halving : <div id="nextHalving">—</div></div>
     </div>
-
-    <!-- Bannière pub en bas de l'onglet Simulation -->
-    <div class="ad-banner card" aria-hidden="true">
-      <ins class="adsbygoogle ad-slot"
-           style="display:block"
-           data-ad-client="ca-pub-7464691689603309"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
   </div>
 
-  <!-- RESULTS TAB -->
-  <div class="tab-content">
+  <!-- RESULTS -->
+  <div id="tab-res" class="tab-content">
     <div class="card table-wrap">
       <h3 id="tableTitle">Tableau des résultats</h3>
       <table id="resultTable">
@@ -137,52 +122,34 @@
         <tbody></tbody>
       </table>
     </div>
-
-    <!-- Bannière pub en bas de l'onglet Résultats -->
-    <div class="ad-banner card" aria-hidden="true">
-      <ins class="adsbygoogle ad-slot"
-           style="display:block"
-           data-ad-client="ca-pub-7464691689603309"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
   </div>
 
-  <!-- CHART TAB -->
-  <div class="tab-content">
+  <!-- CHART -->
+  <div id="tab-chart" class="tab-content">
     <div class="card">
       <canvas id="chart"></canvas>
     </div>
-
-    <!-- Bannière pub en bas de l'onglet Graphique -->
-    <div class="ad-banner card" aria-hidden="true">
-      <ins class="adsbygoogle ad-slot"
-           style="display:block"
-           data-ad-client="ca-pub-7464691689603309"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
   </div>
 
-  <!-- PUBLICITÉ / DON TAB -->
-  <div class="tab-content">
+  <!-- DON (onglet accessible via bouton Don plein largeur) -->
+  <div id="tab-don" class="tab-content">
     <div class="card">
-      <h3 style="margin:0 0 8px 0">Publicité & Don — adresses</h3>
-      <div class="warn">
-        <strong>ATTENTION :</strong> Vérifie toujours le <em>réseau</em> avant d'envoyer (ERC20 vs BEP20 vs native coin). <br>
-        Les adresses token (GOMINING / GMT) sont spécifiques au réseau (BEP20 / ERC20 / SPL ...). <br>
-        N'envoie pas un token sur l'adresse d'une chaîne différente — tu pourrais perdre tes fonds.
+      <div class="promo">
+        <div>
+          <div style="font-weight:800">Code promo — <span style="color:#0b6b3b">+5% sur vos premiers mineurs</span></div>
+          <div class="small">Partagez ce code : <strong>JUC1Z92</strong></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="promo-code" id="promo_code">JUC1Z92</div>
+          <button class="copy-btn" onclick="copyPromo()">Copier le code</button>
+        </div>
       </div>
 
-      <div class="don-grid">
+      <div class="warn" style="margin-top:12px">
+        <strong>ATTENTION :</strong> Vérifie toujours le <em>réseau</em> avant d'envoyer (ERC20 vs BEP20 vs native coin). Les adresses token (GOMINING / GMT) sont spécifiques au réseau. N'envoie pas un token sur l'adresse d'une chaîne différente.
+      </div>
+
+      <div class="don-grid" style="margin-top:12px">
         <div>
           <div class="tag">GOMINING (GMT) — BNB Chain (BEP20)</div>
           <div class="don-row">
@@ -207,7 +174,7 @@
             <div class="addr" id="addr_ton">UQAc0FYVmX9dNSnjkj1KDT1chcQSV-bxeYuAz7lz8qubh6Qz</div>
             <button class="copy-btn" onclick="copyAddr('addr_ton')">Copier</button>
           </div>
-          <div class="small">Minimum suggéré : <strong>10 GMT</strong></div>
+          <div class="small">Minimum : <strong>10 GMT</strong></div>
         </div>
 
         <div>
@@ -216,7 +183,7 @@
             <div class="addr" id="addr_sol">9CzP4YfcrALBLmzfLjqpErfLtAsGaAKpM9C7T3fP2v4s</div>
             <button class="copy-btn" onclick="copyAddr('addr_sol')">Copier</button>
           </div>
-          <div class="small">Minimum suggéré : <strong>10 GMT</strong></div>
+          <div class="small">Minimum : <strong>10 GMT</strong></div>
         </div>
 
         <div>
@@ -225,7 +192,7 @@
             <div class="addr" id="addr_eth_native">0xF7f34ecB6c5f3F1C06C4387AC9c5cB7eDD488e8f</div>
             <button class="copy-btn" onclick="copyAddr('addr_eth_native')">Copier</button>
           </div>
-          <div class="small">Remarque : cette adresse est listée pour ETH natif (vérifie réseau EVM).</div>
+          <div class="small">Vérifie réseau EVM avant d'envoyer.</div>
         </div>
 
         <div>
@@ -242,23 +209,9 @@
             <div class="addr" id="addr_usdc">0xF7f34ecB6c5f3F1C06C4387AC9c5cB7eDD488e8f</div>
             <button class="copy-btn" onclick="copyAddr('addr_usdc')">Copier</button>
           </div>
-          <div class="small">Remarque : même adresse utilisée pour token/USDC selon réseau — <strong>vérifie avant d'envoyer</strong>.</div>
         </div>
 
       </div>
-    </div>
-
-    <!-- Bannière pub en bas de l'onglet Publicité / Don -->
-    <div class="ad-banner card" aria-hidden="true">
-      <ins class="adsbygoogle ad-slot"
-           style="display:block"
-           data-ad-client="ca-pub-7464691689603309"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
     </div>
   </div>
 
@@ -267,10 +220,26 @@
 <div id="toast" class="toast"></div>
 
 <script>
-/* ---------- UI helpers ---------- */
-function showTab(idx){
-  document.querySelectorAll('.tab-content').forEach((el,i)=>el.classList.toggle('active', i===idx));
-  document.querySelectorAll('.tab-btn').forEach((el,i)=>el.classList.toggle('active', i===idx));
+/* ------------- UI helpers ------------- */
+function showMainTab(idx){
+  // main three tabs
+  document.getElementById('tab-sim').classList.toggle('active', idx===0);
+  document.getElementById('tab-res').classList.toggle('active', idx===1);
+  document.getElementById('tab-chart').classList.toggle('active', idx===2);
+  // hide don tab when switching main
+  document.getElementById('tab-don').classList.remove('active');
+  // manage active class visuals on main tab buttons
+  document.querySelectorAll('.tab-btn').forEach((el,i)=> el.classList.toggle('active', i===idx));
+}
+function showDon(){
+  // hide other main tabs
+  document.getElementById('tab-sim').classList.remove('active');
+  document.getElementById('tab-res').classList.remove('active');
+  document.getElementById('tab-chart').classList.remove('active');
+  // show don tab
+  document.getElementById('tab-don').classList.add('active');
+  // remove highlight from main tabs
+  document.querySelectorAll('.tab-btn').forEach(el=> el.classList.remove('active'));
 }
 function showToast(msg, ms=1600){
   const t = document.getElementById('toast');
@@ -280,26 +249,33 @@ function showToast(msg, ms=1600){
 function copyAddr(id){
   const txt = document.getElementById(id).innerText.trim();
   if(!txt) return showToast('Aucune adresse disponible');
-  navigator.clipboard?.writeText(txt).then(()=> showToast('Adresse copiée ✔')) .catch(()=> { alert('Copie non supportée, sélectionne manuellement :\\n' + txt); });
+  navigator.clipboard?.writeText(txt).then(()=> showToast('Adresse copiée ✔')).catch(()=> { alert('Copie non supportée, sélectionne manuellement :\\n' + txt); });
+}
+function copyPromo(){
+  const code = document.getElementById('promo_code').innerText.trim();
+  if(!code) return showToast('Aucun code');
+  navigator.clipboard?.writeText(code).then(()=> showToast('Code promo copié ✔')).catch(()=> { alert('Copie non supportée, sélectionne manuellement :\\n' + code); });
 }
 
-/* ---------- simulate model (conserve toutes fonctionnalités) ---------- */
-const FIRST_HALVING = new Date("2012-11-28");
-const INITIAL_REWARD = 50; // satoshi/TH/jour
+/* ------------- Model & simulate (identique logiques précédentes) ------------- */
+const HALVING_REF = new Date("2024-04-20");
+const REWARD_AT_REF = 49;
+const ENERGY_PRICE_USD_PER_KWH = 0.05;
+const SERVICE_USD_PER_TH_PER_DAY = 0.0089;
 
-function halvingsSince(date){
-  const diff = date - FIRST_HALVING;
+function halvingsSinceRef(date){
+  const diff = date - HALVING_REF;
   const years = diff / (1000*60*60*24*365);
   return Math.floor(years / 4);
 }
 function getRewardPerTH(date){
-  const h = halvingsSince(date);
-  return INITIAL_REWARD / Math.pow(2, h);
+  const k = halvingsSinceRef(date);
+  return REWARD_AT_REF / Math.pow(2, k);
 }
 function getNextHalving(date){
-  const h = halvingsSince(date);
-  const next = new Date(FIRST_HALVING);
-  next.setFullYear(FIRST_HALVING.getFullYear() + 4*(h+1));
+  const k = halvingsSinceRef(date);
+  const next = new Date(HALVING_REF);
+  next.setFullYear(HALVING_REF.getFullYear() + 4*(k+1));
   return next;
 }
 function computeHashrateForMonthFactor(growthRateMonthly, monthsElapsed, baseHashrate){
@@ -308,22 +284,23 @@ function computeHashrateForMonthFactor(growthRateMonthly, monthsElapsed, baseHas
 function halvingDaysInRange(startDate, totalDays){
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + totalDays - 1);
-  const arr = [];
-  let hDate = new Date(FIRST_HALVING);
+  const arr=[];
+  let hDate = new Date(HALVING_REF);
+  while(hDate > endDate){
+    hDate = new Date(hDate); hDate.setFullYear(hDate.getFullYear() - 4);
+  }
   while(hDate <= endDate){
     if(hDate >= startDate){
       const dayIndex = Math.floor((hDate - startDate) / (1000*60*60*24)) + 1;
-      if(dayIndex >= 1 && dayIndex <= totalDays) arr.push(dayIndex);
+      if(dayIndex >=1 && dayIndex <= totalDays) arr.push(dayIndex);
     }
     hDate = new Date(hDate); hDate.setFullYear(hDate.getFullYear() + 4);
   }
   return arr;
 }
 
-/* ---------- simulate ---------- */
 let chartInstance = null;
 async function simulate(){
-  // inputs
   const thInput = parseFloat(document.getElementById('th').value) || 0;
   const remise = parseFloat(document.getElementById('remise').value) || 0;
   const watt = parseFloat(document.getElementById('watt').value) || 0;
@@ -332,38 +309,32 @@ async function simulate(){
   const timeValue = parseInt(document.getElementById('timeValue').value) || 0;
   const btcAnnualGrowth = (parseFloat(document.getElementById('btcGrowth').value)||0) / 100;
 
-  // fetch prices
-  let btcUSD=0, btcEUR=0, gmtUSD=1, gmtEUR=1;
+  let btcUSD = 0, btcEUR=0, gmtUSD=1, gmtEUR=1;
   try{
     const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,gmt-token&vs_currencies=usd,eur");
     const data = await r.json();
     btcUSD = data.bitcoin.usd; btcEUR = data.bitcoin.eur;
     gmtUSD = data["gmt-token"]?.usd ?? 1; gmtEUR = data["gmt-token"]?.eur ?? 1;
   }catch(e){
-    console.warn("Coingecko failed:", e);
+    console.warn('Coingecko fetch failed:', e);
   }
 
-  // update info cards
   document.getElementById('btcPrice').innerText = btcUSD ? `$${btcUSD.toLocaleString()} / €${btcEUR?.toLocaleString()}` : '—';
   document.getElementById('gmtPrice').innerText = gmtUSD ? `$${gmtUSD.toLocaleString()} / €${gmtEUR?.toLocaleString()}` : '—';
-  document.getElementById('rewardPerTHDisplay').innerText = getRewardPerTH(new Date()).toFixed(4);
+  document.getElementById('rewardPerTHDisplay').innerText = getRewardPerTH(new Date()).toFixed(6);
   document.getElementById('nextHalving').innerText = getNextHalving(new Date()).toLocaleDateString();
 
-  // params
   const baseHashrate = 500000;
-  const growthRateMonthly = 0.03 + Math.random()*0.02; // fixed for simulation
+  const growthRateMonthly = 0.03 + Math.random()*0.02;
 
-  // days
   let totalDays = 1;
-  if(unit === "1") totalDays = timeValue;
-  else if(unit === "2") totalDays = timeValue * 30;
+  if(unit==='1') totalDays = timeValue;
+  else if(unit==='2') totalDays = timeValue * 30;
   else totalDays = timeValue * 365;
 
-  // clear table
   const tbody = document.querySelector('#resultTable tbody');
   tbody.innerHTML = '';
 
-  // loop
   let th = thInput;
   let cumulativeRewardSat = 0;
   const startDate = new Date();
@@ -371,7 +342,6 @@ async function simulate(){
   let lastBTC = currentBTC;
   const labels = [];
   const gainHistory = [];
-
   const halvingDays = halvingDaysInRange(startDate, totalDays);
 
   for(let day=1; day<=totalDays; day++){
@@ -379,16 +349,24 @@ async function simulate(){
     date.setDate(startDate.getDate() + day - 1);
 
     const rewardPerTH = getRewardPerTH(date);
-    const rewardBrut = rewardPerTH * th;
+    const rewardBrut_sat = rewardPerTH * th;
 
-    const electricityFeePerTH = (0.05 * 24 * watt / (gmtUSD || 1) / 1000) * (1 - remise/100);
-    const serviceFeePerTH = (0.0089 / (gmtUSD || 1)) * (1 - remise/100);
-    const totalElectricityFee = electricityFeePerTH * th;
-    const totalServiceFee = serviceFeePerTH * th;
+    const electricity_usd_per_th_per_day_before_discount = ENERGY_PRICE_USD_PER_KWH * 24 * watt / 1000;
+    const electricity_usd_per_th_per_day = electricity_usd_per_th_per_day_before_discount * (1 - remise/100);
+    const service_usd_per_th_per_day = SERVICE_USD_PER_TH_PER_DAY * (1 - remise/100);
+    const total_fees_usd = (electricity_usd_per_th_per_day + service_usd_per_th_per_day) * th;
 
-    const rewardNet = rewardBrut - (totalElectricityFee + totalServiceFee);
+    let total_fees_sat = 0;
+    let elec_fee_sat = 0, serv_fee_sat = 0;
+    if(btcUSD && btcUSD > 0){
+      total_fees_sat = (total_fees_usd / btcUSD) * 1e8;
+      elec_fee_sat = ((electricity_usd_per_th_per_day * th) / btcUSD) * 1e8;
+      serv_fee_sat = ((service_usd_per_th_per_day * th) / btcUSD) * 1e8;
+    } else {
+      console.warn('btcUSD missing — fees shown as 0 sat');
+    }
 
-    const monthsElapsed = Math.floor((day-1) / 30);
+    const monthsElapsed = Math.floor((day-1)/30);
     const currentHashrate = computeHashrateForMonthFactor(growthRateMonthly, monthsElapsed, baseHashrate);
     if(day===1 || day%30===0) document.getElementById('networkHashrate').innerText = Math.round(currentHashrate).toLocaleString();
 
@@ -398,42 +376,41 @@ async function simulate(){
     lastBTC = currentBTC;
 
     if(strategy === 'gomining'){
-      cumulativeRewardSat += rewardNet;
+      cumulativeRewardSat += rewardBrut_sat - (elec_fee_sat + serv_fee_sat);
     } else {
-      cumulativeRewardSat = rewardNet;
+      cumulativeRewardSat = rewardBrut_sat - (elec_fee_sat + serv_fee_sat);
     }
 
     if(strategy === 'reinvest'){
-      const rewardUSD = (rewardNet / 1e8) * currentBTC;
+      const rewardUSD = ((rewardBrut_sat - (elec_fee_sat + serv_fee_sat)) / 1e8) * (currentBTC || btcUSD || 0);
       const reinvestUSD = rewardUSD * 1.05;
       const thBought = reinvestUSD / 28;
       th += thBought;
     }
 
-    const showRow = (unit === "1") || (unit === "2" && day % 30 === 0) || (unit === "3" && day % 365 === 0);
+    const showRow = (unit === '1') || (unit === '2' && day % 30 === 0) || (unit === '3' && day % 365 === 0);
     if(showRow){
-      const rewardUSD_display = ((strategy === 'gomining' ? cumulativeRewardSat : rewardNet) / 1e8) * currentBTC;
+      const rewardNetSat = (strategy === 'gomining') ? cumulativeRewardSat : (rewardBrut_sat - (elec_fee_sat + serv_fee_sat));
+      const rewardNetUSD = ((rewardNetSat) / 1e8) * (currentBTC || btcUSD || 0);
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${day}</td>
         <td>${th.toFixed(6)}</td>
-        <td>${rewardBrut.toFixed(4)}</td>
-        <td>${totalElectricityFee.toFixed(6)}</td>
-        <td>${totalServiceFee.toFixed(6)}</td>
-        <td>${(strategy === 'gomining' ? cumulativeRewardSat : rewardNet).toFixed(4)}</td>
-        <td>$${rewardUSD_display.toFixed(2)}</td>
+        <td>${rewardBrut_sat.toFixed(4)}</td>
+        <td>${elec_fee_sat.toFixed(4)}</td>
+        <td>${serv_fee_sat.toFixed(4)}</td>
+        <td>${rewardNetSat.toFixed(4)}</td>
+        <td>$${rewardNetUSD.toFixed(2)}</td>
       `;
       tbody.appendChild(tr);
     }
 
     labels.push(day);
-    gainHistory.push(strategy === 'gomining' ? cumulativeRewardSat : rewardNet);
+    gainHistory.push((strategy === 'gomining') ? cumulativeRewardSat : (rewardBrut_sat - (elec_fee_sat + serv_fee_sat)));
   }
 
-  // update final BTC display
   document.getElementById('btcPrice').innerText = currentBTC ? `$${currentBTC.toLocaleString(undefined,{maximumFractionDigits:2})}` : '—';
 
-  // chart
   if(chartInstance) chartInstance.destroy();
   const ctx = document.getElementById('chart').getContext('2d');
 
@@ -443,7 +420,6 @@ async function simulate(){
 
   const halvingLabelIndices = halvingDays.map(d => d - 1).filter(i => i >= 0 && i < labels.length);
 
-  // halving plugin
   const halvingPlugin = {
     id: 'halvingLines',
     afterDatasetsDraw(chart, args, options){
@@ -511,9 +487,9 @@ async function simulate(){
     }
   });
 
-  // go to results
-  showTab(1);
-} // simulate end
+  // switch to Results tab
+  showMainTab(1);
+}
 </script>
 </body>
 </html>
